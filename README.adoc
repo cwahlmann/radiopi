@@ -1,4 +1,4 @@
-= radiopi - a raspberry pi internet radio
+= RadioPi - a raspberry pi internet radio
 
 image:screenshots/radio_pi_07.jpg[Radio Pi,width=60%]
 
