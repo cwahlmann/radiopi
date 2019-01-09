@@ -2,3 +2,22 @@
 
 image:screenshots/radio_pi_07.jpg[Radio Pi,width=60%]
 
+== Screenshots
+
+.select view - initially loading list of radio stations
+image:screenshots/radio_pi_00.jpg[Radio Pi,width=30%]
+
+.settings page - no connection
+image:screenshots/radio_pi_01.jpg[Radio Pi,width=30%]
+.settings page - change WLAN
+image:screenshots/radio_pi_02.jpg[Radio Pi,width=30%]
+
+.select view - with list of stations
+image:screenshots/radio_pi_03.jpg[Radio Pi,width=30%]
+.select view - only show favourites
+image:screenshots/radio_pi_04.jpg[Radio Pi,width=30%]
+.select view - filtered by "SWR" string
+image:screenshots/radio_pi_05.jpg[Radio Pi,width=30%]
+
+.play view - play selected radio station
+image:screenshots/radio_pi_06.jpg[Radio Pi,width=30%]
