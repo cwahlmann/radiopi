@@ -1,5 +1,5 @@
 #!/bin/bash
-# add this file to /etc/local.rc
+# add to /etc/rc.local: "/home/pi/Radio/startup.sh"
 amixer cset numid=3 1
 amixer set PCM -- 95%
 cd /home/pi/RadioPi

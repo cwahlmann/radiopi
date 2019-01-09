@@ -2,22 +2,51 @@
 
 image:screenshots/radio_pi_07.jpg[Radio Pi,width=60%]
 
+== What is needed?
+=== Hardware
+* a Raspberry Pi
+* a WLAN dongle (for Raspberry < V3)
+* a 3.2" touchscreen LCD Display (320x240 px)
+* (optional) an acryl case that fits with the display
+* (optional) some powerbank
+
+=== Software
+* Raspbian OS lite (a headless linux)
+
+== Setup
+
+. install additional software:
+* vlc for playback
+* python3 (with pygame, requests, json, threading)
+
+. copy folder `RadioPi` to /home/pi
+. edit /etc/rc.local
+* append `/home/pi/RadioPi/startup.sh` to the end of the file
+. create folder /home/pi/RadioPi/log
+. create folder /home/pi/RadioPi/tmp
+. reboot system
+
+*Problems? send a note to `christian at dreierschach.de` :-)*
+
 == Screenshots
 
-.select view - initially loading list of radio stations
-image:screenshots/radio_pi_00.jpg[Radio Pi,width=30%]
+[cols="1,1"]
+|===
+a|Settings view - no connection::
+image:screenshots/radio_pi_01.jpg[Radio Pi]
+a|Settings view - change WLAN::
+image:screenshots/radio_pi_02.jpg[Radio Pi]
 
-.settings page - no connection
-image:screenshots/radio_pi_01.jpg[Radio Pi,width=30%]
-.settings page - change WLAN
-image:screenshots/radio_pi_02.jpg[Radio Pi,width=30%]
+a|Select view - initially loading list of radio stations::
+image:screenshots/radio_pi_00.jpg[Radio Pi]
+a|Select view - with list of stations::
+image:screenshots/radio_pi_03.jpg[Radio Pi]
 
-.select view - with list of stations
-image:screenshots/radio_pi_03.jpg[Radio Pi,width=30%]
-.select view - only show favourites
-image:screenshots/radio_pi_04.jpg[Radio Pi,width=30%]
-.select view - filtered by "SWR" string
-image:screenshots/radio_pi_05.jpg[Radio Pi,width=30%]
+a|Select view - only show favourites::
+image:screenshots/radio_pi_04.jpg[Radio Pi]
+a|Select view - filtered by "SWR" string::
+image:screenshots/radio_pi_05.jpg[Radio Pi]
 
-.play view - play selected radio station
-image:screenshots/radio_pi_06.jpg[Radio Pi,width=30%]
+a|Play view - play selected radio station::
+image:screenshots/radio_pi_06.jpg[Radio Pi]
+|
