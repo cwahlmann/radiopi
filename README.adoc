@@ -22,9 +22,12 @@ image:screenshots/radio_pi_07.jpg[Radio Pi,width=60%]
 . copy folder `RadioPi` to /home/pi
 . edit /etc/rc.local
 * append `/home/pi/RadioPi/startup.sh` to the end of the file
+
 . create folder /home/pi/RadioPi/log
 . create folder /home/pi/RadioPi/tmp
 . reboot system
+
+=> RadioPI uses the services of http://www.radio-browser.info . *Thanks a lot!!*
 
 *Problems? send a note to `christian at dreierschach.de` :-)*
 
