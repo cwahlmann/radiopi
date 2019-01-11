@@ -13,6 +13,11 @@ image:screenshots/radio_pi_07.jpg[Radio Pi,width=60%]
 === Software
 * Raspbian OS lite (a headless linux)
 
+=== additional content included
+
+* RadioPI uses the services of http://www.radio-browser.info . *Thanks a lot!!*
+* the free font package `dejavu-fonts-ttf-2.37`, see https://dejavu-fonts.github.io
+
 == Setup
 
 . install additional software:
@@ -26,8 +31,6 @@ image:screenshots/radio_pi_07.jpg[Radio Pi,width=60%]
 . create folder /home/pi/RadioPi/log
 . create folder /home/pi/RadioPi/tmp
 . reboot system
-
-=> RadioPI uses the services of http://www.radio-browser.info . *Thanks a lot!!*
 
 *Problems? send a note to `christian at dreierschach.de` :-)*
 
