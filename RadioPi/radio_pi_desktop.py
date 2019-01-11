@@ -44,11 +44,12 @@ framebuilder = FrameBuilder(
     images.label(Images.FRAME_BOTTOM),
     20,20
     )
+fontspath = "fonts/dejavu-fonts-ttf-2.37/ttf/"
 fonts = [
-    'fonts/DejaVuSans.ttf',
-    'fonts/DejaVuSans-Bold.ttf',
-    'fonts/DejaVuSans-Oblique.ttf',
-    'fonts/DejaVuSans-BoldOblique.ttf'    
+    fontspath + 'DejaVuSans.ttf',
+    fontspath + 'DejaVuSans-Bold.ttf',
+    fontspath + 'DejaVuSans-Oblique.ttf',
+    fontspath + 'DejaVuSans-BoldOblique.ttf'    
 ]
 sizes = [12, 16, 20, 24]
 #sizes = [20, 24, 28, 36]
