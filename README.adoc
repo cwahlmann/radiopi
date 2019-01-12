@@ -20,17 +20,80 @@ image:screenshots/radio_pi_07.jpg[Radio Pi,width=60%]
 
 == Setup
 
-. install additional software:
+update raspbian::
+[source, bash]
+----
+sudo apt-get update
+sudo apt-get upgrade
+----
+
+install additional software::
 * vlc for playback
-* python3 (with pygame, requests, json, threading)
+* python3 (may be already installed)
+* python3 libs
 
-. copy folder `RadioPi` to /home/pi
-. edit /etc/rc.local
-* append `/home/pi/RadioPi/startup.sh` to the end of the file
+[source, bash]
+----
+sudo apt-get install vlc
+sudo apt-get install python3
+sudo apt-get install python3-pip
+sudo apt-get install python3-pygame
+sudo pip3 install requests evdev
+----
 
-. create folder /home/pi/RadioPi/log
-. create folder /home/pi/RadioPi/tmp
-. reboot system
+install RadioPi::
+* copy folder `RadioPi` to /home/pi
+* make shell-scripts executable
+
+[source, bash]
+----
+pi@raspberrypi:~ $ cd RadioPi
+pi@raspberrypi:~/RadioPi $ chmod +x *.sh
+pi@raspberrypi:~/RadioPi $ chmod +x network/*.sh
+----
+
+test installed libraries:
+[source, bash]
+----
+pi@raspberrypi:~/RadioPi python3 testlib.py
+pygame 1.9.4
+Hello from the pygame community. https://www.pygame.org/contribute.html
+all python libs available
+----
+
+make RadioPi start at boot - add `/home/pi/RadioPi/startup.sh` to `rc.local`::
+[source, bash]
+----
+#!/bin/sh -e
+#
+# rc.local
+#
+# This script is executed at the end of each multiuser runlevel.
+# Make sure that the script will "exit 0" on success or any other
+# value on error.
+#
+# In order to enable or disable this script just change the execution
+# bits.
+#
+# By default this script does nothing.
+
+# Print the IP address
+_IP=$(hostname -I) || true
+if [ "$_IP" ]; then
+  printf "My IP address is %s\n" "$_IP"
+fi
+
+# start RadioPi
+/home/pi/RadioPi startup.sh
+
+exit 0
+----
+
+reboot system::
+[source, bash]
+----
+sudo reboot
+----
 
 *Problems? send a note to `christian at dreierschach.de` :-)*
 
