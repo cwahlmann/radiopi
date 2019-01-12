@@ -5,4 +5,4 @@ import pygame.font
 import requests
 #import evdev
 
-print ("all python libs available")
+print ("=> all required python libs available")

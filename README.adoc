@@ -28,9 +28,9 @@ sudo apt-get upgrade
 ----
 
 install additional software::
-* vlc for playback
-* python3 (may be already installed)
-* python3 libs
+* `vlc` for playback
+* `python3` (may be already installed)
+* some `python3` libraries
 
 [source, bash]
 ----
@@ -42,7 +42,7 @@ sudo pip3 install requests evdev
 ----
 
 install RadioPi::
-* copy folder `RadioPi` to /home/pi
+* copy folder `RadioPi` to `/home/pi`
 * make shell-scripts executable
 
 [source, bash]
@@ -52,16 +52,16 @@ pi@raspberrypi:~/RadioPi $ chmod +x *.sh
 pi@raspberrypi:~/RadioPi $ chmod +x network/*.sh
 ----
 
-test installed libraries:
+test installed libraries::
 [source, bash]
 ----
 pi@raspberrypi:~/RadioPi python3 testlib.py
 pygame 1.9.4
 Hello from the pygame community. https://www.pygame.org/contribute.html
-all python libs available
+=> all required python libs available
 ----
 
-make RadioPi start at boot - add `/home/pi/RadioPi/startup.sh` to `rc.local`::
+make `RadioPi` start at boot - add `/home/pi/RadioPi/startup.sh` to `/etc/rc.local`::
 [source, bash]
 ----
 #!/bin/sh -e
