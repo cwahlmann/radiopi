@@ -41,7 +41,7 @@ sudo apt-get install python3-pygame
 sudo pip3 install requests evdev
 ----
 
-install RadioPi::
+install `RadioPi`::
 * copy folder `RadioPi` to `/home/pi`
 * make shell-scripts executable
 
@@ -84,7 +84,7 @@ if [ "$_IP" ]; then
 fi
 
 # start RadioPi
-/home/pi/RadioPi startup.sh
+/home/pi/RadioPi/startup.sh
 
 exit 0
 ----
