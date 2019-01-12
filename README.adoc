@@ -32,7 +32,19 @@ sudo apt-get upgrade
 
 install the LCD 3.2 display fb-driver::
 * *Only install the kernel driver.* Do not route X (that should not be there, because of "Raspbian OS lite") or the text-console to the LCD-Display!
-* see your documentation how to setup the driver
+* see your documentation how to setup the driver. See the following instructions to install a display from `joy-IT`
+[source, bash]
+----
+# append the following lines to /boot/config.txt
+sudo nano /boot/config.txt
+
+dtparam=spi=on
+dtoverlay=joy-IT-Display-Driver-32b-overlay:rotate=270,swapxy=1
+
+# get and install the display driver
+wget anleitung.joy-it.net/upload/joy-IT-Display-Driver-32b-overlay.dtb
+sudo cp joy-IT-Display-Driver-32b-overlay.dtb /boot/overlays/joy-IT-Display-Driver-32b-overlay.dtbo
+----
 
 install additional software::
 * `vlc` for playback
