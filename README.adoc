@@ -4,6 +4,7 @@ image:screenshots/radio_pi_07.jpg[Radio Pi,width=60%]
 
 == What is needed?
 === Hardware
+
 * a Raspberry Pi
 * a WLAN dongle (for Raspberry < V3)
 * a 3.2" touchscreen LCD Display (320x240 px)
@@ -11,7 +12,9 @@ image:screenshots/radio_pi_07.jpg[Radio Pi,width=60%]
 * (optional) some powerbank
 
 === Software
+
 * Raspbian OS lite (a headless linux)
+* LCD touchscreen display driver (see your documentation where to obtain this)
 
 === additional content included
 
@@ -26,6 +29,10 @@ update raspbian::
 sudo apt-get update
 sudo apt-get upgrade
 ----
+
+install the LCD 3.2 display fb-driver::
+* *Only install the kernel driver.* Do not route X (that should not be there, because of "Raspbian OS lite") or the text-console to the LCD-Display!
+* see your documentation how to setup the driver
 
 install additional software::
 * `vlc` for playback
