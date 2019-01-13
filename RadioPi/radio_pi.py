@@ -11,7 +11,7 @@ from radiostation.radioservice import RadioService
 from ui.touch_device import TouchDevice
 from ui.view import ImageFont, UI, FrameBuilder
 from view.radio_view import Images, RadioPlayView, RadioSelectView,\
-    RadioSetupView
+    RadioSetupView, ScreensaverView
 
 
 #from ui.mouse_device import MouseDevice
@@ -64,9 +64,13 @@ select_view.set_size(320, 240)
 setup_view = RadioSetupView(screen, images, framebuilder, fonts, sizes, colors)
 setup_view.set_size(320, 240)
 
+screensaver_view = ScreensaverView(screen, images)
+screensaver_view.set_size(320, 240)
+
 ui.get_root().add(play_view)
 ui.get_root().add(select_view)
 ui.get_root().add(setup_view)
+ui.set_screensaver(screensaver_view)
 
 controller = Controller(play_view, select_view, setup_view, radio_service, audio_player, network_service)
 

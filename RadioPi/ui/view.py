@@ -2,6 +2,8 @@ import pygame
 
 from events.events import UiEvent
 import threading
+from controller.threads import InterruptableThread
+import time
 
 class UiComponent:
 
@@ -75,6 +77,8 @@ class UiComponent:
         return self.changed
     
     def set_changed(self):
+        if not self.visible:
+            return
         self.lock.acquire()
         self.changed = True
         if self.get_parent():
@@ -155,15 +159,33 @@ class UiComponent:
 class UI:
 
     def __init__(self, screen, w, h, background):
-        self.root = UiComponent()
-        self.root.set_size(w, h)
-        self.root.set_pos(0, 0) 
+        self.root_user = UiComponent()
+        self.root_user.set_size(w, h)
+        self.root_user.set_pos(0, 0)
+        self.root = self.root_user
+        self.screensaver = None 
+        self.last_change = time.time()
+        self.timeout = 10
         self.screen = screen
         self.background = background
-        
+    
+    def set_screensaver(self, screensaver):
+        self.screensaver = screensaver
+        self.screensaver.set_mouse_click_handler(self.stop_screensaver)
+
+    def stop_screensaver(self):
+        self.root = self.root_user
+        self.root.set_changed()
+                
     def refresh(self):
+        t = time.time()
+        if self.screensaver and self.root != self.screensaver and t > self.last_change + self.timeout:
+            self.root = self.screensaver
+            self.root.set_changed()
+            self.screensaver.start()
         if not self.root.has_changed():
             return
+        self.last_change = t
         self.root.clear_changed()
         self.screen.fill(self.background)
         self.root.draw(self.screen, (0, 0))
@@ -173,7 +195,7 @@ class UI:
         self.root.on_event(event, (0, 0))
         
     def get_root(self):
-        return self.root
+        return self.root_user
 
 class ImageComponent(UiComponent):
 
@@ -515,3 +537,33 @@ class ListViewComponent(TextlabelComponent):
             i = i + 1
             row = row + 1
             y = y + self.line_height
+
+class ScreensaverComponent (UiComponent):
+    def __init__(self, do_animation):
+        UiComponent.__init__(self)
+        self.do_animation = do_animation
+        self.mouse_click_handler = self.default_mouse_click_handler
+        self.set_event_listener(UiEvent.MOUSE_CLICK_EVENT, self.handle_mouse_click)
+        self.animation_thread = None
+        
+    def set_mouse_click_handler(self, mouse_click_handler):
+        self.mouse_click_handler = mouse_click_handler
+        
+    def start(self):
+        if self.animation_thread:
+            self.animation_thread.interrupt()
+        self.animation_thread = InterruptableThread().with_runnable(self.animation)
+        self.animation_thread.start()
+        
+    def handle_mouse_click(self, event, offset):
+        self.animation_thread.interrupt()
+        self.mouse_click_handler()
+        return True
+
+    def default_mouse_click_handler(self):
+        print("default Screensaver CLICK")
+
+    def animation(self):
+        while not self.animation_thread.is_interrupted():
+            self.do_animation()
+            time.sleep(0.05)

@@ -1,5 +1,9 @@
 from ui.view import ImageComponent, UiEvent, \
-    UiComponent, ButtonComponent, TextlabelComponent, ListViewComponent
+    UiComponent, ButtonComponent, TextlabelComponent, ListViewComponent,\
+    ScreensaverComponent
+from controller.threads import InterruptableThread
+import time
+from random import randint
 
 
 class KeyComponent(ButtonComponent):
@@ -40,6 +44,11 @@ class Images:
     LABEL_WLAN_2 = 45
     LABEL_WLAN_3 = 46
 
+    LABEL_SCR_SAVER_0 = 47
+    LABEL_SCR_SAVER_1 = 48
+    LABEL_SCR_SAVER_2 = 49
+    LABEL_SCR_SAVER_3 = 50
+    
     def __init__(self, font, font_button_active, font_button_pushed, font_button_inactive):
         self.font = font
         self.font_button_active = font_button_active
@@ -54,6 +63,11 @@ class Images:
             Images.LABEL_WLAN_1: font.get_image(23, 4, 1, 1),
             Images.LABEL_WLAN_2: font.get_image(21, 5, 1, 1),
             Images.LABEL_WLAN_3: font.get_image(22, 5, 1, 1),
+
+            Images.LABEL_SCR_SAVER_0: font.get_image(24,   0, 0.5, 12),
+            Images.LABEL_SCR_SAVER_1: font.get_image(24.5, 0, 0.5, 12),
+            Images.LABEL_SCR_SAVER_2: font.get_image(25,   0, 0.5, 12),
+            Images.LABEL_SCR_SAVER_3: font.get_image(25.5, 0, 0.5, 12),
 
             Images.FRAME_TOP_LEFT: font.get_image(6, 8, 1, 1),
             Images.FRAME_TOP_RIGHT: font.get_image(7, 8, 1, 1),
@@ -675,3 +689,70 @@ class RadioSetupView(UiComponent):
     def default_select_handler(self, item):
         print ("default selection handler: %s" % item)
         return True
+
+class ScreensaverView (ScreensaverComponent):
+    def __init__(self, screen, images):
+        ScreensaverComponent.__init__(self, self.animate)
+        self.screen = screen
+        self.images = images
+
+        self.line1 = ImageComponent(self.images.label(Images.LABEL_SCR_SAVER_0))
+        self.line1.hide()
+        self.add(self.line1)
+
+        self.line2 = ImageComponent(self.images.label(Images.LABEL_SCR_SAVER_0))
+        self.line2.hide()
+        self.add(self.line2)
+
+        self.line_img = Images.LABEL_SCR_SAVER_0
+        self.delay = 100
+        
+    def animate(self):
+        if self.delay > 0:
+            self.delay = self.delay - 1
+            if self.delay == 0:
+                self.animation_mode = randint(0,2)
+                if self.animation_mode == 0:
+                    self.dx = randint(2,5)
+                    self.line_x = 0
+                    self.line1.show()
+                    self.line2.show()
+                elif self.animation_mode == 1:
+                    self.dx = randint(2,5)
+                    self.line_x = 0
+                    self.line1.show()
+                else:
+                    self.dx = -randint(2,5)
+                    self.line_x = 310
+                    self.line1.show()
+        else:
+            self.line_img = self.line_img + 1
+            if self.line_img > Images.LABEL_SCR_SAVER_3:
+                self.line_img = Images.LABEL_SCR_SAVER_0
+            self.line1.set_image(self.images.label(self.line_img))
+            self.line2.set_image(self.images.label(self.line_img))
+
+            self.line_x = self.line_x + self.dx
+
+            if self.animation_mode == 0: # two lines
+                if self.line_x >= 150:
+                    self.dx = -self.dx
+                elif self.line_x <=0:
+                    self.line1.hide()
+                    self.line2.hide()
+                    self.delay = randint(400, 600)
+                self.line1.set_pos(self.line_x, 0)
+                self.line2.set_pos(310-self.line_x, 0)
+            elif self.animation_mode == 1:
+                if self.line_x >= 310:
+                    self.line1.hide()
+                    self.line2.hide()
+                    self.delay = randint(400, 600)
+                self.line1.set_pos(self.line_x, 0)
+            elif self.animation_mode == 2:
+                if self.line_x <= 0:
+                    self.line1.hide()
+                    self.line2.hide()
+                    self.delay = randint(400, 600)
+                self.line1.set_pos(self.line_x, 0)
+            self.set_changed()
