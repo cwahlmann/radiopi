@@ -1,6 +1,7 @@
 = RadioPi - a raspberry pi internet radio
 
 image:screenshots/radio_pi_07.jpg[Radio Pi,width=60%]
+see more at <<screenshots>>
 
 == What is needed?
 === Hardware
@@ -117,6 +118,7 @@ sudo reboot
 
 *Problems? send a note to `christian at dreierschach.de` :-)*
 
+[[screenshots]]
 == Screenshots
 
 [cols="1,1"]
