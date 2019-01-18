@@ -566,4 +566,4 @@ class ScreensaverComponent (UiComponent):
     def animation(self):
         while not self.animation_thread.is_interrupted():
             self.do_animation()
-            time.sleep(0.05)
+            time.sleep(0.1)

@@ -49,6 +49,10 @@ class Images:
     LABEL_SCR_SAVER_2 = 49
     LABEL_SCR_SAVER_3 = 50
     
+    LABEL_SCR_OFS_DIGIT = 51
+    LABEL_SCR_KANGAROO = 61
+    LABEL_SCR_STAR = 62
+    
     def __init__(self, font, font_button_active, font_button_pushed, font_button_inactive):
         self.font = font
         self.font_button_active = font_button_active
@@ -68,6 +72,20 @@ class Images:
             Images.LABEL_SCR_SAVER_1: font.get_image(24.5, 0, 0.5, 12),
             Images.LABEL_SCR_SAVER_2: font.get_image(25,   0, 0.5, 12),
             Images.LABEL_SCR_SAVER_3: font.get_image(25.5, 0, 0.5, 12),
+
+            Images.LABEL_SCR_OFS_DIGIT:     font.get_image(26, 0, 2, 2),
+            Images.LABEL_SCR_OFS_DIGIT + 1: font.get_image(26, 2, 2, 2),
+            Images.LABEL_SCR_OFS_DIGIT + 2: font.get_image(26, 4, 2, 2),
+            Images.LABEL_SCR_OFS_DIGIT + 3: font.get_image(26, 6, 2, 2),
+            Images.LABEL_SCR_OFS_DIGIT + 4: font.get_image(26, 8, 2, 2),
+            Images.LABEL_SCR_OFS_DIGIT + 5: font.get_image(26, 10, 2, 2),
+            Images.LABEL_SCR_OFS_DIGIT + 6: font.get_image(28, 0, 2, 2),
+            Images.LABEL_SCR_OFS_DIGIT + 7: font.get_image(28, 2, 2, 2),
+            Images.LABEL_SCR_OFS_DIGIT + 8: font.get_image(28, 4, 2, 2),
+            Images.LABEL_SCR_OFS_DIGIT + 9: font.get_image(28, 6, 2, 2),
+            
+            Images.LABEL_SCR_KANGAROO: font.get_image(28, 8,  2, 2),
+            Images.LABEL_SCR_STAR:     font.get_image(28, 10, 2, 2),
 
             Images.FRAME_TOP_LEFT: font.get_image(6, 8, 1, 1),
             Images.FRAME_TOP_RIGHT: font.get_image(7, 8, 1, 1),
@@ -704,8 +722,13 @@ class ScreensaverView (ScreensaverComponent):
         self.line2.hide()
         self.add(self.line2)
 
+        self.digit = ImageComponent(self.images.label(Images.LABEL_SCR_OFS_DIGIT))
+        self.digit.set_pos(140, 100)
+        self.digit.hide()
+        self.add(self.digit)
+        
         self.line_img = Images.LABEL_SCR_SAVER_0
-        self.delay = 100
+        self.delay = 50
         
     def animate(self):
         if self.delay > 0:
@@ -713,18 +736,24 @@ class ScreensaverView (ScreensaverComponent):
             if self.delay == 0:
                 self.animation_mode = randint(0,2)
                 if self.animation_mode == 0:
-                    self.dx = randint(2,5)
+                    self.dx = randint(4,10)
                     self.line_x = 0
+                    self.digit_img = Images.LABEL_SCR_OFS_DIGIT
                     self.line1.show()
                     self.line2.show()
+                    self.digit.show()
                 elif self.animation_mode == 1:
-                    self.dx = randint(2,5)
+                    self.dx = randint(4,10)
                     self.line_x = 0
+                    self.digit_img = Images.LABEL_SCR_OFS_DIGIT
                     self.line1.show()
+                    self.digit.show()
                 else:
-                    self.dx = -randint(2,5)
+                    self.dx = -randint(4,10)
                     self.line_x = 310
+                    self.digit_img = Images.LABEL_SCR_OFS_DIGIT
                     self.line1.show()
+                    self.digit.show()
         else:
             self.line_img = self.line_img + 1
             if self.line_img > Images.LABEL_SCR_SAVER_3:
@@ -732,6 +761,11 @@ class ScreensaverView (ScreensaverComponent):
             self.line1.set_image(self.images.label(self.line_img))
             self.line2.set_image(self.images.label(self.line_img))
 
+            self.digit_img = self.digit_img + 1
+            if self.digit_img > Images.LABEL_SCR_STAR:
+                self.digit_img = Images.LABEL_SCR_OFS_DIGIT
+            self.digit.set_image(self.images.label(self.digit_img))
+            
             self.line_x = self.line_x + self.dx
 
             if self.animation_mode == 0: # two lines
@@ -740,19 +774,25 @@ class ScreensaverView (ScreensaverComponent):
                 elif self.line_x <=0:
                     self.line1.hide()
                     self.line2.hide()
+                    self.digit.hide()
                     self.delay = randint(400, 600)
                 self.line1.set_pos(self.line_x, 0)
                 self.line2.set_pos(310-self.line_x, 0)
+                self.digit.set_pos(140, 100)
             elif self.animation_mode == 1:
                 if self.line_x >= 310:
                     self.line1.hide()
                     self.line2.hide()
+                    self.digit.hide()
                     self.delay = randint(400, 600)
                 self.line1.set_pos(self.line_x, 0)
+                self.digit.set_pos(self.line_x-20+5, 100)
             elif self.animation_mode == 2:
                 if self.line_x <= 0:
                     self.line1.hide()
                     self.line2.hide()
+                    self.digit.hide()
                     self.delay = randint(400, 600)
                 self.line1.set_pos(self.line_x, 0)
+                self.digit.set_pos(self.line_x-20+5, 100)
             self.set_changed()
