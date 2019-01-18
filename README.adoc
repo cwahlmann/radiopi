@@ -138,4 +138,5 @@ image:screenshots/radio_pi_05.jpg[Radio Pi]
 
 a|Play view - play selected radio station::
 image:screenshots/radio_pi_06.jpg[Radio Pi]
-|
+a|Screensaver::
+image:screenshots/radio_pi_08.jpg[Radio Pi]
