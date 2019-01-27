@@ -3,20 +3,26 @@ from threading import Thread
 from view.radio_view import KeyboardComponent
 from time import sleep
 from controller.threads import InterruptableThread, TimerThread
+from clock.clock import AlarmClock, Time
 
 
 class Controller:
     MAX_STATIONLIST_SIZE = 10000
     
-    def __init__(self, play_view, select_view, setup_view, radio_service, player, network_service):
+    def __init__(self, play_view, select_view, setup_view, setup_clock_view, radio_service, player, network_service):
         self.favourites = {}
         
         self.play_view = play_view
         self.select_view = select_view
         self.setup_view = setup_view
+        self.setup_clock_view = setup_clock_view
         self.radio_service = radio_service
         self.player = player
         self.network_service = network_service
+        self.clock = AlarmClock()
+        self.clock.on_tick(self.on_tick)
+        self.clock.on_sleep(self.on_sleep)
+        self.clock.on_wake(self.on_wake)
                 
         self.station = None
         self.filter = ""
@@ -33,10 +39,12 @@ class Controller:
         self.bind_play_view()
         self.bind_select_view()
         self.bind_setup_view()
+        self.bind_setup_clock_view()
         
         self.leave_play_view()
         self.leave_setup_view()
         self.enter_select_view()
+        self.leave_setup_clock_view()
 
     def save_config(self):
         config = ConfigParser()
@@ -58,6 +66,54 @@ class Controller:
             for item in config.get("wlan", "known_wlan_list").split(","):
                 (key, value) = item.split(":")
                 self.known_wlan_list[key[1:-1]] = value[1:-1]
+
+# ------ clock event handler --
+
+    def on_tick(self, t):
+        self.play_view.clock.with_time(t)
+        self.select_view.clock.with_time(t)
+        self.setup_view.clock.with_time(t)
+        self.setup_clock_view.clock.with_time(t)
+        
+        if self.clock.sleep_enabled:
+            self.play_view.clock.with_sleep_time(self.clock.get_sleep())
+            self.select_view.clock.with_sleep_time(self.clock.get_sleep())
+            self.setup_view.clock.with_sleep_time(self.clock.get_sleep())
+            self.setup_clock_view.clock.with_sleep_time(self.clock.get_sleep())
+        else:
+            self.play_view.clock.disable_sleep()
+            self.select_view.clock.disable_sleep()
+            self.setup_view.clock.disable_sleep()
+            self.setup_clock_view.clock.disable_sleep()
+            
+        if self.clock.wake_enabled:
+            self.play_view.clock.with_wake_time(self.clock.get_wake())
+            self.select_view.clock.with_wake_time(self.clock.get_wake())
+            self.setup_view.clock.with_wake_time(self.clock.get_wake())
+            self.setup_clock_view.clock.with_wake_time(self.clock.get_wake())
+        else:
+            self.play_view.clock.disable_wake()
+            self.select_view.clock.disable_wake()
+            self.setup_view.clock.disable_wake()
+            self.setup_clock_view.clock.disable_wake()
+        
+        self.setup_clock_view.time_field.set_offset(t.sub(self.clock.get_offset()))
+        print("CONTROLLER - tick %s" % t.get_string())
+        
+    def on_sleep(self, t):
+        self.play_view.show_start_button = False
+        self.play_view.handle_start_stop()
+        print("CONTROLLER - sleep %s" % t.get_string())
+
+    def on_wake(self, t):
+        self.leave_select_view()
+        self.leave_setup_view()
+        self.leave_setup_clock_view()
+        self.enter_play_view()
+
+        self.play_view.show_start_button = True
+        self.play_view.handle_start_stop()
+        print("CONTROLLER - wake %s" % t.get_string())
         
 # ------ play view ------
 
@@ -119,6 +175,7 @@ class Controller:
         self.select_view.handle_select_key = self.handle_select_key
         self.select_view.handle_play_station = self.handle_play_station
         self.select_view.handle_setup = self.handle_setup
+        self.select_view.handle_push_clock = self.handle_select_setup_clock
 
     def enter_select_view(self):
         self.select_view.show()
@@ -126,6 +183,12 @@ class Controller:
 
     def leave_select_view(self):
         self.select_view.hide()
+
+    def handle_select_setup_clock(self):
+        print ("push")
+        self.leave_select_view()
+        self.enter_setup_clock_view()
+        return True
 
     def handle_play_station(self, station):
         self.leave_select_view()
@@ -147,6 +210,11 @@ class Controller:
         return True
 
     def handle_select_return(self):
+        self.play_view.show()
+        self.select_view.hide()
+        return True
+
+    def handle_push_clock(self):
         self.play_view.show()
         self.select_view.hide()
         return True
@@ -265,6 +333,63 @@ class Controller:
         self.setup_view.set_pw(setting["pw"])
         self.known_wlan_list[setting["ssid"]] = setting["pw"] 
         self.save_config()
+
+# -------- setup clock --
+
+    def bind_setup_clock_view(self):
+        self.setup_clock_view.key_enter_handler = self.handle_confirm
+        self.setup_clock_view.key_back_handler = self.handle_back
+
+    def enter_setup_clock_view(self):
+        self.setup_clock_view.show()
+
+    def leave_setup_clock_view(self):
+        self.setup_clock_view.hide()
+
+    def handle_confirm(self):
+        wake_enabled = self.setup_clock_view.wake_time_field.time_enabled
+        wake_time = self.setup_clock_view.wake_time_field.get_time()
+
+        sleep_enabled = self.setup_clock_view.sleep_time_field.time_enabled
+        sleep_time = self.setup_clock_view.sleep_time_field.get_time()
+
+        time_offset = self.setup_clock_view.time_field.get_time()
+        
+        self.clock.with_offset(time_offset)
+
+        print ("wake: %s %s\nsleep: %s %s\ntime: %s" 
+               % (wake_enabled, wake_time.get_string(), 
+                  sleep_enabled, sleep_time.get_string(), 
+                  time_offset.get_string()))
+
+        if wake_enabled:
+            self.clock.with_wake(wake_time)
+        else:
+            self.clock.with_no_wake()
+
+        if sleep_enabled:
+            self.clock.with_sleep(sleep_time)
+        else:
+            self.clock.with_no_sleep()
+
+        self.leave_setup_clock_view()
+        self.enter_select_view()
+            
+    def handle_back(self):
+        if self.clock.wake_enabled:        
+            self.setup_clock_view.wake_time_field.set_time(self.clock.get_wake())
+        else:
+            self.setup_clock_view.wake_time_field.clear()
+
+        if self.clock.sleep_enabled:        
+            self.setup_clock_view.sleep_time_field.set_time(self.clock.get_sleep())
+        else:
+            self.setup_clock_view.sleep_time_field.clear()
+
+        self.setup_clock_view.time_field.set_time(self.clock.get_offset())
+        
+        self.leave_setup_clock_view()
+        self.enter_select_view()
 
 # -------- util --
 

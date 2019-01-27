@@ -9,6 +9,7 @@ class UiComponent:
 
     def __init__(self):
         self.parent = None
+        self.root = self
         self.components = []
         self.visible = True
         self.active = True
@@ -24,7 +25,11 @@ class UiComponent:
     
     def set_parent(self, new_parent):
         self.parent = new_parent;
+        self.root = new_parent.get_root()
         return self
+    
+    def get_root(self):
+        return self.root
     
     def show(self):
         self.visible = True
@@ -164,8 +169,9 @@ class UI:
         self.root_user.set_pos(0, 0)
         self.root = self.root_user
         self.screensaver = None 
-        self.last_change = time.time()
-        self.timeout = 10
+        self.screensaver_active = False
+        self.last_action = time.time()
+        self.timeout = 60
         self.screen = screen
         self.background = background
     
@@ -173,25 +179,30 @@ class UI:
         self.screensaver = screensaver
         self.screensaver.set_mouse_click_handler(self.stop_screensaver)
 
+    def start_screensaver(self):
+        self.screensaver_active = True
+        self.root = self.screensaver
+        self.root.set_changed()
+        self.screensaver.start()
+
     def stop_screensaver(self):
+        self.screensaver.stop()
         self.root = self.root_user
+        self.screensaver_active = False
         self.root.set_changed()
                 
     def refresh(self):
-        t = time.time()
-        if self.screensaver and self.root != self.screensaver and t > self.last_change + self.timeout:
-            self.root = self.screensaver
-            self.root.set_changed()
-            self.screensaver.start()
+        if self.screensaver and not self.screensaver_active and time.time() > self.last_action + self.timeout:
+            self.start_screensaver()
         if not self.root.has_changed():
             return
-        self.last_change = t
         self.root.clear_changed()
         self.screen.fill(self.background)
         self.root.draw(self.screen, (0, 0))
         pygame.display.flip()
 
     def on_event(self, event):
+        self.last_action = time.time()
         self.root.on_event(event, (0, 0))
         
     def get_root(self):
@@ -364,7 +375,7 @@ class TextlabelComponent(UiComponent):
         y = py
         (width, height) = self.get_size()
         for line in self.text.split('\n'):
-            x = px
+            x = 0
             line_height = 0
             textsurfaces = []
             word = ""
@@ -407,7 +418,7 @@ class TextlabelComponent(UiComponent):
                 if s >= len(self.sizes):
                     s = len(self.sizes)-1
                 font = pygame.font.Font(self.fonts[bold + italic], self.sizes[s])
-                textsurface = font.render(word, True, (255,255,255))
+                textsurface = font.render(word, True, self.colors[color])
                 (sx, sy) = textsurface.get_size()
                 if x < width-1:
                     textsurfaces.append((x, sy, textsurface))
@@ -421,7 +432,7 @@ class TextlabelComponent(UiComponent):
                     sw = width - x
                 if y + line_height + sh - sy > height:
                     sh = height - (y + line_height + sy)
-                screen.blit(textsurface, (ox + x, oy + y + line_height - sy), (0,0,sw,sh))
+                screen.blit(textsurface, (ox + x + px, oy + y + line_height - sy), (0,0,sw,sh))
             if y-sy > height:
                 break
             y = y + line_height
@@ -554,6 +565,10 @@ class ScreensaverComponent (UiComponent):
             self.animation_thread.interrupt()
         self.animation_thread = InterruptableThread().with_runnable(self.animation)
         self.animation_thread.start()
+
+    def stop(self):
+        if self.animation_thread:
+            self.animation_thread.interrupt()
         
     def handle_mouse_click(self, event, offset):
         self.animation_thread.interrupt()

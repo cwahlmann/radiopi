@@ -1,9 +1,13 @@
 from ui.view import ImageComponent, UiEvent, \
-    UiComponent, ButtonComponent, TextlabelComponent, ListViewComponent,\
+    UiComponent, ButtonComponent, TextlabelComponent, ListViewComponent, \
     ScreensaverComponent
-from controller.threads import InterruptableThread
+from controller.threads import TimerThread
 import time
 from random import randint
+import pygame
+import math
+from events.events import UiEvent
+from clock.clock import Time
 
 
 class KeyComponent(ButtonComponent):
@@ -53,6 +57,10 @@ class Images:
     LABEL_SCR_KANGAROO = 61
     LABEL_SCR_STAR = 62
     
+    LABEL_CLOCK = 63
+    LABEL_ALARM = 64
+    LABEL_SLEEP = 65
+
     def __init__(self, font, font_button_active, font_button_pushed, font_button_inactive):
         self.font = font
         self.font_button_active = font_button_active
@@ -68,9 +76,9 @@ class Images:
             Images.LABEL_WLAN_2: font.get_image(21, 5, 1, 1),
             Images.LABEL_WLAN_3: font.get_image(22, 5, 1, 1),
 
-            Images.LABEL_SCR_SAVER_0: font.get_image(24,   0, 0.5, 12),
+            Images.LABEL_SCR_SAVER_0: font.get_image(24, 0, 0.5, 12),
             Images.LABEL_SCR_SAVER_1: font.get_image(24.5, 0, 0.5, 12),
-            Images.LABEL_SCR_SAVER_2: font.get_image(25,   0, 0.5, 12),
+            Images.LABEL_SCR_SAVER_2: font.get_image(25, 0, 0.5, 12),
             Images.LABEL_SCR_SAVER_3: font.get_image(25.5, 0, 0.5, 12),
 
             Images.LABEL_SCR_OFS_DIGIT:     font.get_image(26, 0, 2, 2),
@@ -84,9 +92,13 @@ class Images:
             Images.LABEL_SCR_OFS_DIGIT + 8: font.get_image(28, 4, 2, 2),
             Images.LABEL_SCR_OFS_DIGIT + 9: font.get_image(28, 6, 2, 2),
             
-            Images.LABEL_SCR_KANGAROO: font.get_image(28, 8,  2, 2),
+            Images.LABEL_SCR_KANGAROO: font.get_image(28, 8, 2, 2),
             Images.LABEL_SCR_STAR:     font.get_image(28, 10, 2, 2),
 
+            Images.LABEL_CLOCK: font.get_image(21, 6, 2, 2),
+            Images.LABEL_ALARM: font.get_image(30, 0, 2, 2),
+            Images.LABEL_SLEEP: font.get_image(30, 2, 2, 2),
+            
             Images.FRAME_TOP_LEFT: font.get_image(6, 8, 1, 1),
             Images.FRAME_TOP_RIGHT: font.get_image(7, 8, 1, 1),
             Images.FRAME_BOTTOM_LEFT: font.get_image(6, 10, 1, 1),
@@ -296,9 +308,12 @@ class RadioPlayView(UiComponent):
         self.station = None
         self.favourite = False
               
-        self.add(ImageComponent(self.images.label(Images.LABEL_RADIO_PI)).set_pos(20, 0))
-        self.add(ImageComponent(self.images.label(Images.LABEL_WAVE)).set_pos(140, 0))
-        
+        self.add(ImageComponent(self.images.label(Images.LABEL_RADIO_PI)).set_pos(40, 0))
+        self.add(ImageComponent(self.images.label(Images.LABEL_WAVE)).set_pos(160, 0))
+        self.clock = ClockComponent(self.images) #.on_push(self.on_push_clock)
+        self.clock.set_pos(0, 0).set_size(40, 40)
+        self.add(self.clock)
+
         self.framebuilder.frame(self, 0, 2, 16, 6)
         self.framebuilder.frame(self, 0, 8, 4, 4)
         self.framebuilder.frame(self, 4, 8, 4, 4)
@@ -412,25 +427,29 @@ class RadioSelectView(UiComponent):
         self.filter = ""
         self.show_start_button = True
 
-        self.favourite = False
-        self.favourite_icon = ButtonComponent(self.images.button(Images.BUTTON_OFS_KEY + 0x2e))
-              
-        self.add(ImageComponent(self.images.label(Images.LABEL_RADIO_PI)).set_pos(20, 0))
-        self.add(ImageComponent(self.images.label(Images.LABEL_WAVE)).set_pos(140, 0))
-        
-        self.framebuilder.frame(self, 0, 2, 14, 6)
-        #self.framebuilder.frame(self, 14, 2, 2, 2)
-        self.framebuilder.frame(self, 14, 2, 2, 4)
-#        self.framebuilder.frame(self, 14, 6, 2, 2)
-        self.framebuilder.frame(self, 0, 8, 16, 4)
-                
         self.handle_select_up = self.default_key_handler
         self.handle_select_down = self.default_key_handler
         self.handle_select_key = self.default_key_handler
         self.handle_play_station = self.default_play_station_handler
         self.handle_setup = self.default_key_handler
         self.handle_select_station = self.default_key_handler
+        self.handle_push_clock = lambda : print("select clock pushed")
 
+        self.favourite = False
+        self.favourite_icon = ButtonComponent(self.images.button(Images.BUTTON_OFS_KEY + 0x2e))
+              
+        self.add(ImageComponent(self.images.label(Images.LABEL_RADIO_PI)).set_pos(40, 0))
+        self.add(ImageComponent(self.images.label(Images.LABEL_WAVE)).set_pos(160, 0))
+        self.clock = ClockComponent(self.images).on_push(self.on_push_clock)
+        self.clock.set_pos(0, 0).set_size(40, 40)
+        self.add(self.clock)
+
+        self.framebuilder.frame(self, 0, 2, 14, 6)
+        # self.framebuilder.frame(self, 14, 2, 2, 2)
+        self.framebuilder.frame(self, 14, 2, 2, 4)
+#        self.framebuilder.frame(self, 14, 6, 2, 2)
+        self.framebuilder.frame(self, 0, 8, 16, 4)
+                
         self.add(ButtonComponent(self.images.button(Images.BUTTON_SETUP))\
             .set_pos(280, 120)\
             .set_event_listener(UiEvent.MOUSE_CLICK_EVENT, lambda event, source: self.handle_setup())
@@ -458,7 +477,11 @@ class RadioSelectView(UiComponent):
         self.keyboard.set_pos(10, 170).set_size(300, 60)
         self.keyboard.set_keyboard_handler(lambda keycode: self.handle_select_key(keycode))
         self.add(self.keyboard) 
-
+        
+    def on_push_clock(self):
+        print("--- on push clock ---")
+        self.handle_push_clock()
+        
     def set_stations(self, stations, name_filter):
         self.filter = name_filter
         if len(stations) == 0:
@@ -496,7 +519,7 @@ class RadioSelectView(UiComponent):
         return self.favourite_icon
 
     def default_key_handler(self):
-        print("default button handler")
+        print("default handler")
 
     def default_play_station_handler(self, station):
         print("default station handler")
@@ -515,13 +538,16 @@ class RadioSetupView(UiComponent):
         
         self.handle_select_up = self.default_handler      
         self.handle_select_down = self.default_handler
-        self.handle_select_wlan= self.default_select_handler
+        self.handle_select_wlan = self.default_select_handler
         self.handle_change_password = self.default_handler
         self.handle_return_key = self.default_handler
         self.handle_scan_wlan = self.default_handler
 
-        self.add(ImageComponent(self.images.label(Images.LABEL_RADIO_PI)).set_pos(20, 0))
-        self.add(ImageComponent(self.images.label(Images.LABEL_WAVE)).set_pos(140, 0))
+        self.add(ImageComponent(self.images.label(Images.LABEL_RADIO_PI)).set_pos(40, 0))
+        self.add(ImageComponent(self.images.label(Images.LABEL_WAVE)).set_pos(160, 0))
+        self.clock = ClockComponent(self.images) #.on_push(self.on_push_clock)
+        self.clock.set_pos(0, 0).set_size(40, 40)
+        self.add(self.clock)
         
         self.framebuilder.frame(self, 0, 2, 9, 3)
         self.framebuilder.frame(self, 0, 5, 9, 3)
@@ -708,7 +734,223 @@ class RadioSetupView(UiComponent):
         print ("default selection handler: %s" % item)
         return True
 
+
+class RadioSetupClockView(UiComponent):
+                    
+    def __init__(self, screen, images, framebuilder, fonts, sizes, colors):
+        UiComponent.__init__(self)
+        self.screen = screen
+        self.images = images
+        self.framebuilder = framebuilder
+        self.fonts = fonts
+        self.sizes = sizes
+        self.colors = colors
+    
+        self.actual_time = {"hh": 0, "mm": 0, "ss": 0}
+        self.alarm_time = None
+        self.sleep_time = {"hh": 0, "mm": 0}
+        
+        self.key_enter_handler = lambda: print("confirm changes of setup clock view")
+        self.key_back_handler = lambda: print("leave setup clock view")
+
+        self.add(ImageComponent(self.images.label(Images.LABEL_RADIO_PI)).set_pos(40, 0))
+        self.add(ImageComponent(self.images.label(Images.LABEL_WAVE)).set_pos(160, 0))
+        self.clock = ClockComponent(self.images) #.on_push(self.on_push_clock)
+        self.clock.set_pos(0, 0).set_size(40, 40)
+        self.add(self.clock)
+        
+        self.time_field = TimeField(screen, Images.LABEL_CLOCK, images, framebuilder, fonts, sizes, colors)
+        self.time_field.set_pos(160, 40)
+        self.time_field.key_enter_handler = lambda: self.on_key_enter()
+        self.add(self.time_field)
+
+        self.wake_time_field = TimeField(screen, Images.LABEL_ALARM, images, framebuilder, fonts, sizes, colors)
+        self.wake_time_field.set_pos(0, 40)
+        self.wake_time_field.key_enter_handler = lambda: self.on_key_enter()
+        self.add(self.wake_time_field)
+
+        self.sleep_time_field = TimeField(screen, Images.LABEL_SLEEP, images, framebuilder, fonts, sizes, colors)
+        self.sleep_time_field.set_pos(0, 140)
+        self.sleep_time_field.key_enter_handler = lambda: self.on_key_enter()
+        self.add(self.sleep_time_field)
+
+        self.framebuilder.frame(self, 8, 7, 8, 5)
+        self.add_key(170, 210, 0x3d, self.on_key_enter)
+        self.add_key(290, 210, 0x2d, self.on_key_back)
+
+    def on_key_enter(self, event, source):
+        self.key_enter_handler()
+
+    def on_key_back(self, event, source):
+        self.key_back_handler()
+        
+    def add_key(self, x, y, keycode, on_key):
+        self.add(ButtonComponent(self.images.button(Images.BUTTON_OFS_KEY + keycode))
+                 .set_event_listener(UiEvent.MOUSE_CLICK_EVENT, on_key)
+                 .set_pos(x, y))
+
+class TimeField(UiComponent):
+
+    def __init__(self, screen, label, images, framebuilder, fonts, sizes, colors):
+        UiComponent.__init__(self)
+        self.screen = screen
+        self.images = images
+        self.label = label
+        self.framebuilder = framebuilder
+        self.fonts = fonts
+        self.sizes = sizes
+        self.colors = colors
+        
+        width = 8
+        height = 5
+        if label:
+            self.add(ImageComponent(self.images.label(label)).set_pos(110, 30))
+            
+        self.set_size(width * 20, height * 20)
+        
+        self.framebuilder.frame(self, 0, 0, width, height)
+        
+        self.hh0 = TextlabelComponent("*^^^0*", fonts, sizes, colors)
+        self.hh0.set_pos(12, 35).set_size(20, 40)
+        self.add(self.hh0)
+
+        self.hh1 = TextlabelComponent("*^^^0", fonts, sizes, colors)
+        self.hh1.set_pos(32, 35).set_size(20, 40)
+        self.add(self.hh1)
+
+        self.ddot = TextlabelComponent("*^^^:", fonts, sizes, colors)
+        self.ddot.set_pos(55, 33).set_size(20, 40)
+        self.add(self.ddot)
+
+        self.mm0 = TextlabelComponent("*^^^0", fonts, sizes, colors)
+        self.mm0.set_pos(72, 35).set_size(20, 40)
+        self.add(self.mm0)
+
+        self.mm1 = TextlabelComponent("*^^^0", fonts, sizes, colors)
+        self.mm1.set_pos(92, 35).set_size(20, 40)
+        self.add(self.mm1)
+
+        self.add_key(10, 10, 0x3e, self.on_key_plus_0)
+        self.add_key(30, 10, 0x3e, self.on_key_plus_1)
+        self.add_key(70, 10, 0x3e, self.on_key_plus_2)
+        self.add_key(90, 10, 0x3e, self.on_key_plus_3)
+
+        self.add_key(10, 70, 0x3f, self.on_key_minus_0)
+        self.add_key(30, 70, 0x3f, self.on_key_minus_1)
+        self.add_key(70, 70, 0x3f, self.on_key_minus_2)
+        self.add_key(90, 70, 0x3f, self.on_key_minus_3)
+
+        self.add_key(120, 70, 0x0d, self.on_key_clear)
+
+        self.time = Time()
+        self.offset = Time()
+        self.hh_plus_10 = Time().with_hh(10)
+        self.hh_minus_10 = Time().with_hh(-10)
+        self.hh_plus_1 = Time().with_hh(1)
+        self.hh_minus_1 = Time().with_hh(-1)
+        self.mm_plus_10 = Time().with_mm(10)
+        self.mm_minus_10 = Time().with_mm(-10)
+        self.mm_plus_1 = Time().with_mm(1)
+        self.mm_minus_1 = Time().with_mm(-1)
+        self.time_enabled = True
+
+    def draw(self, screen, offset):
+        t = self.time.add(self.offset)
+        (hh, mm, ss) = t.get_time()
+        if self.time_enabled:
+            shh = "%02d" % hh
+            smm = "%02d" % mm
+            self.hh0.set_text("*^^^%s*" % shh[0:1])
+            self.hh1.set_text("*^^^%s*" % shh[1:2])
+            self.mm0.set_text("*^^^%s*" % smm[0:1])
+            self.mm1.set_text("*^^^%s*" % smm[1:2])
+        else:        
+            self.hh0.set_text("*^^^-*")
+            self.hh1.set_text("*^^^-*")
+            self.mm0.set_text("*^^^-*")
+            self.mm1.set_text("*^^^-*")
+        return UiComponent.draw(self, screen, offset)
+    
+    def set_time(self, time):
+        self.time = time
+        self.time_enabled = True
+        self.set_changed()
+                    
+    def set_offset(self, offset):
+        self.offset = offset
+        self.time_enabled = True
+        self.set_changed()
+
+    def get_time(self):
+        return self.time
+
+    def get_offset(self):
+        return self.offset
+
+    def clear(self):
+        self.time_enabled = False
+        self.set_changed()
+        
+    def add_key(self, x, y, keycode, on_key):
+        self.add(ButtonComponent(self.images.button(Images.BUTTON_OFS_KEY + keycode))
+                 .set_event_listener(UiEvent.MOUSE_CLICK_EVENT, on_key)
+                 .set_pos(x, y))
+    
+    def on_key_minus_0(self, event, source):
+        self.time = self.time.add(self.hh_minus_10)
+        self.time_enabled = True
+        self.set_changed()
+        return True
+    
+    def on_key_plus_0(self, event, source):
+        self.time = self.time.add(self.hh_plus_10)
+        self.time_enabled = True
+        self.set_changed()
+        return True
+
+    def on_key_minus_1(self, event, source):
+        self.time = self.time.add(self.hh_minus_1)
+        self.time_enabled = True
+        self.set_changed()
+        return True
+                
+    def on_key_plus_1(self, event, source):
+        self.time = self.time.add(self.hh_plus_1)
+        self.time_enabled = True
+        self.set_changed()
+        return True
+
+    def on_key_minus_2(self, event, source):
+        self.time = self.time.add(self.mm_minus_10)
+        self.time_enabled = True
+        self.set_changed()
+        return True
+    
+    def on_key_plus_2(self, event, source):
+        self.time = self.time.add(self.mm_plus_10)
+        self.time_enabled = True
+        self.set_changed()
+        return True
+
+    def on_key_minus_3(self, event, source):
+        self.time = self.time.add(self.mm_minus_1)
+        self.time_enabled = True
+        self.set_changed()
+        return True
+                
+    def on_key_plus_3(self, event, source):
+        self.time = self.time.add(self.mm_plus_1)
+        self.time_enabled = True
+        self.set_changed()
+        return True
+
+    def on_key_clear(self, event, source):
+        self.time_enabled = False
+        self.set_changed()
+        return True
+                    
 class ScreensaverView (ScreensaverComponent):
+
     def __init__(self, screen, images):
         ScreensaverComponent.__init__(self, self.animate)
         self.screen = screen
@@ -734,22 +976,22 @@ class ScreensaverView (ScreensaverComponent):
         if self.delay > 0:
             self.delay = self.delay - 1
             if self.delay == 0:
-                self.animation_mode = randint(0,2)
+                self.animation_mode = randint(0, 2)
                 if self.animation_mode == 0:
-                    self.dx = randint(4,10)
+                    self.dx = randint(4, 10)
                     self.line_x = 0
                     self.digit_img = Images.LABEL_SCR_OFS_DIGIT
                     self.line1.show()
                     self.line2.show()
                     self.digit.show()
                 elif self.animation_mode == 1:
-                    self.dx = randint(4,10)
+                    self.dx = randint(4, 10)
                     self.line_x = 0
                     self.digit_img = Images.LABEL_SCR_OFS_DIGIT
                     self.line1.show()
                     self.digit.show()
                 else:
-                    self.dx = -randint(4,10)
+                    self.dx = -randint(4, 10)
                     self.line_x = 310
                     self.digit_img = Images.LABEL_SCR_OFS_DIGIT
                     self.line1.show()
@@ -768,16 +1010,16 @@ class ScreensaverView (ScreensaverComponent):
             
             self.line_x = self.line_x + self.dx
 
-            if self.animation_mode == 0: # two lines
+            if self.animation_mode == 0:  # two lines
                 if self.line_x >= 150:
                     self.dx = -self.dx
-                elif self.line_x <=0:
+                elif self.line_x <= 0:
                     self.line1.hide()
                     self.line2.hide()
                     self.digit.hide()
                     self.delay = randint(400, 600)
                 self.line1.set_pos(self.line_x, 0)
-                self.line2.set_pos(310-self.line_x, 0)
+                self.line2.set_pos(310 - self.line_x, 0)
                 self.digit.set_pos(140, 100)
             elif self.animation_mode == 1:
                 if self.line_x >= 310:
@@ -786,7 +1028,7 @@ class ScreensaverView (ScreensaverComponent):
                     self.digit.hide()
                     self.delay = randint(400, 600)
                 self.line1.set_pos(self.line_x, 0)
-                self.digit.set_pos(self.line_x-20+5, 100)
+                self.digit.set_pos(self.line_x - 20 + 5, 100)
             elif self.animation_mode == 2:
                 if self.line_x <= 0:
                     self.line1.hide()
@@ -794,5 +1036,97 @@ class ScreensaverView (ScreensaverComponent):
                     self.digit.hide()
                     self.delay = randint(400, 600)
                 self.line1.set_pos(self.line_x, 0)
-                self.digit.set_pos(self.line_x-20+5, 100)
+                self.digit.set_pos(self.line_x - 20 + 5, 100)
             self.set_changed()
+
+
+class ClockComponent(UiComponent):
+
+    def __init__(self, images):
+        UiComponent.__init__(self)
+        self.images = images
+        self.add(ImageComponent(self.images.label(Images.LABEL_CLOCK)))
+        self.c_dial = (48, 48, 48)
+        self.c_grid = (160, 160, 160)
+        self.c_hand = (255, 255, 255)
+        self.c_hand_stop = (255, 0, 255)
+        self.c_hand_wake = (48, 180, 255)
+        self.time = Time()
+        self.wake = Time()
+        self.wake_enabled = False
+        self.sleep = Time()
+        self.sleep_enabled = False
+        self.push_clock_handler = lambda: print("clock pushed")
+        self.set_event_listener(UiEvent.MOUSE_CLICK_EVENT, self.on_push_clock)
+    
+    def on_push_clock(self, event, source):
+        self.push_clock_handler()
+        return True
+                 
+    def with_wake_time(self, t):
+        self.wake = t
+        self.wake_enabled = True
+        self.set_changed()
+        return self
+    
+    def disable_wake(self):
+        self.wake_enabled = False
+        self.set_changed()
+        return self
+
+    def with_sleep_time(self, t):
+        self.sleep = t
+        self.sleep_enabled = True
+        self.set_changed()
+        return self
+
+    def disable_sleep(self):
+        self.sleep_enabled= False
+        self.set_changed()
+        return self
+    
+    def with_time(self, t):
+        self.time = t
+        self.set_changed()
+        return self
+
+    def on_push(self, push_clock_handler):
+        self.push_clock_handler = push_clock_handler
+        return self
+        
+    def draw(self, screen, offset):
+        UiComponent.draw(self, screen, offset)
+
+        if self.wake_enabled:        
+            (hh_wake, mm_wake, ss_wake) = self.wake.get_time()
+            p1 = self.get_point(offset, hh_wake + mm_wake / 60, 0, 0)
+            p2 = self.get_point(offset, hh_wake + mm_wake / 60, 0, 0.8)
+            pygame.draw.line(screen, self.c_hand_wake, p1, p2, 1)
+
+        if self.sleep_enabled:        
+            (hh_sleep, mm_sleep, ss_sleep) = self.sleep.get_time()
+            p1 = self.get_point(offset, hh_sleep + mm_sleep / 60, 0, 0)
+            p2 = self.get_point(offset, hh_sleep + mm_sleep / 60, 0, 0.8)
+            pygame.draw.line(screen, self.c_hand_stop, p1, p2, 1)
+        
+        (hh, mm, ss) = self.time.get_time()
+        
+        p1 = self.get_point(offset, hh + mm / 60, 0, 0.45)
+        p2 = self.get_point(offset, hh + mm / 60, 0, 0.0)
+        pygame.draw.line(screen, self.c_hand, p1, p2, 3)
+
+        p1 = self.get_point(offset, 0, mm, 0.7)
+        p2 = self.get_point(offset, 0, mm, 0.0)
+        pygame.draw.line(screen, self.c_hand, p1, p2, 2)
+
+        p1 = self.get_point(offset, 0, ss, 0.8)
+        p2 = self.get_point(offset, 0, ss, 0.0)
+        pygame.draw.line(screen, self.c_hand, p1, p2, 1)
+
+    def get_point(self, offset, hh, mm, r):
+        a = (hh * 30 + mm * 6) / 180 * math.pi        
+        (ox, oy) = offset
+        (w, h) = self.get_size()
+        (x, y) = self.get_pos()
+        return (ox + x + w * 0.5 + math.sin(a) * w * 0.5 * r, oy + y + h * 0.5 - math.cos(a) * h * 0.5 * r) 
+            

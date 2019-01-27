@@ -9,7 +9,7 @@ from radiostation.radioservice import RadioService
 from ui.mouse_device import MouseDevice
 from ui.view import ImageFont, UI, FrameBuilder
 from view.radio_view import Images, RadioPlayView, RadioSelectView,\
-    RadioSetupView, ScreensaverView
+    RadioSetupView, ScreensaverView, ClockComponent, RadioSetupClockView
 from audio.player import Player
 from network.network import NetworkService
 
@@ -64,15 +64,19 @@ select_view.set_size(320, 240)
 setup_view = RadioSetupView(screen, images, framebuilder, fonts, sizes, colors)
 setup_view.set_size(320, 240)
 
+setup_clock_view = RadioSetupClockView(screen, images, framebuilder, fonts, sizes, colors)
+setup_clock_view.set_size(320, 240)
+
 screensaver_view = ScreensaverView(screen, images)
 screensaver_view.set_size(320, 240)
 
 ui.get_root().add(play_view)
 ui.get_root().add(select_view)
 ui.get_root().add(setup_view)
+ui.get_root().add(setup_clock_view)
 ui.set_screensaver(screensaver_view)
 
-controller = Controller(play_view, select_view, setup_view, radio_service, audio_player, network_service)
+controller = Controller(play_view, select_view, setup_view, setup_clock_view, radio_service, audio_player, network_service)
 
 ui.get_root().show()
 ui.refresh()
