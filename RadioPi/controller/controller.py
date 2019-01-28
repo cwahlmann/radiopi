@@ -1,9 +1,8 @@
 from configparser import ConfigParser
 from threading import Thread
 from view.radio_view import KeyboardComponent
-from time import sleep
 from controller.threads import InterruptableThread, TimerThread
-from clock.clock import AlarmClock, Time
+from clock.clock import AlarmClock
 
 
 class Controller:

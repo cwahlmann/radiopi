@@ -1,13 +1,11 @@
-from ui.view import ImageComponent, UiEvent, \
+from ui.view import ImageComponent, \
     UiComponent, ButtonComponent, TextlabelComponent, ListViewComponent, \
     ScreensaverComponent
-from controller.threads import TimerThread
-import time
 from random import randint
 import pygame
 import math
-from events.events import UiEvent
 from clock.clock import Time
+from events.events import UiEvent
 
 
 class KeyComponent(ButtonComponent):
