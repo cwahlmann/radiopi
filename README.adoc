@@ -123,6 +123,11 @@ sudo reboot
 
 [cols="1,1"]
 |===
+a|All views - now with clock::
+image:screenshots/radio_pi_09.jpg[Radio Pi]
+a|Clock setup view - set actual, wake and sleep time::
+image:screenshots/radio_pi_10.jpg[Radio Pi]
+
 a|Settings view - no connection::
 image:screenshots/radio_pi_01.jpg[Radio Pi]
 a|Settings view - change WLAN::
