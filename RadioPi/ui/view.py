@@ -1,7 +1,6 @@
 import pygame   
 
 from events.events import UiEvent
-import threading
 from controller.threads import InterruptableThread
 import time
 
@@ -18,7 +17,6 @@ class UiComponent:
         (self.width, self.height)= (1, 1)
         self.event_listeners = {}
         self.mouse_over = False
-        self.lock = threading.Lock()
         
     def get_parent(self):
         return self.parent
@@ -84,19 +82,15 @@ class UiComponent:
     def set_changed(self):
         if not self.visible:
             return
-        self.lock.acquire()
         self.changed = True
         if self.get_parent():
             self.get_parent().set_changed()
-        self.lock.release()
         return self
     
     def clear_changed(self):
-        self.lock.acquire()
         self.changed = False
         for component in self.components:
             component.clear_changed()
-        self.lock.release()
         return self
         
     def add(self, component):
