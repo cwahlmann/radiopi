@@ -97,12 +97,10 @@ class Controller:
             self.setup_clock_view.clock.disable_wake()
         
         self.setup_clock_view.time_field.set_offset(t.sub(self.clock.get_offset()))
-        print("CONTROLLER - tick %s" % t.get_string())
         
     def on_sleep(self, t):
         self.play_view.show_start_button = False
         self.play_view.handle_start_stop()
-        print("CONTROLLER - sleep %s" % t.get_string())
 
     def on_wake(self, t):
         self.leave_select_view()
@@ -112,7 +110,6 @@ class Controller:
 
         self.play_view.show_start_button = True
         self.play_view.handle_start_stop()
-        print("CONTROLLER - wake %s" % t.get_string())
         
 # ------ play view ------
 
@@ -123,6 +120,7 @@ class Controller:
         self.play_view.handle_stop = self.handle_stop
         self.play_view.handle_select_station = self.handle_select_station 
         self.play_view.handle_favourite = self.handle_favourite
+        self.play_view.handle_push_clock = self.handle_select_setup_clock
 
     def enter_play_view(self):
         self.play_view.show()
@@ -185,7 +183,9 @@ class Controller:
 
     def handle_select_setup_clock(self):
         print ("push")
+        self.leave_play_view()
         self.leave_select_view()
+        self.leave_setup_view()
         self.enter_setup_clock_view()
         return True
 
@@ -274,6 +274,7 @@ class Controller:
         InterruptableThread().with_runnable(self.refresh_wlan_config).start()
         InterruptableThread().with_runnable(self.refresh_wlan_list).start()
         self.timer_thread = None
+        self.setup_view.handle_push_clock = self.handle_select_setup_clock
         
     def enter_setup_view(self):
         self.setup_view.show()
@@ -355,11 +356,6 @@ class Controller:
         time_offset = self.setup_clock_view.time_field.get_time()
         
         self.clock.with_offset(time_offset)
-
-        print ("wake: %s %s\nsleep: %s %s\ntime: %s" 
-               % (wake_enabled, wake_time.get_string(), 
-                  sleep_enabled, sleep_time.get_string(), 
-                  time_offset.get_string()))
 
         if wake_enabled:
             self.clock.with_wake(wake_time)

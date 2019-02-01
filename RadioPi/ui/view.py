@@ -23,35 +23,36 @@ class UiComponent:
     
     def set_parent(self, new_parent):
         self.parent = new_parent;
-        self.root = new_parent.get_root()
         return self
     
     def get_root(self):
-        return self.root
+        if self.parent:
+            return self.parent.get_root()
+        return self
     
     def show(self):
         self.visible = True
-        self.changed = True
+        self.set_changed()
         return self
         
     def hide(self):
         self.visible = False
-        self.changed = True
+        self.set_changed()
         return self
 
     def activate(self):
         self.active = True
-        self.changed = True
+        self.set_changed()
         return self
         
     def deactivate(self):
         self.active = False
-        self.changed = True
+        self.set_changed()
         return self
 
     def clear(self):
         self.components = []
-        self.changed = True
+        self.set_changed()
         return self
 
     def get_pos(self):
@@ -59,7 +60,7 @@ class UiComponent:
     
     def set_pos(self, x, y):
         self.pos = (x, y)
-        self.changed = True
+        self.set_changed()
         return self
     
     def get_size(self):
@@ -73,24 +74,25 @@ class UiComponent:
     
     def set_size(self, w, h):
         (self.width, self.height) = (w, h)
-        self.changed = True
+        self.set_changed()
         return self
 
     def has_changed(self):
-        return self.changed
+        return self.get_root().changed
     
     def set_changed(self):
         if not self.visible:
             return
-        self.changed = True
-        if self.get_parent():
-            self.get_parent().set_changed()
+        self.get_root().changed = True
+#        self.changed = True
+#        if self.get_parent():
+#            self.get_parent().set_changed()
         return self
     
     def clear_changed(self):
-        self.changed = False
-        for component in self.components:
-            component.clear_changed()
+        self.get_root().changed = False
+#        for component in self.components:
+#            component.clear_changed()
         return self
         
     def add(self, component):

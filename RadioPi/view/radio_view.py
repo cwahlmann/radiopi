@@ -308,7 +308,8 @@ class RadioPlayView(UiComponent):
               
         self.add(ImageComponent(self.images.label(Images.LABEL_RADIO_PI)).set_pos(40, 0))
         self.add(ImageComponent(self.images.label(Images.LABEL_WAVE)).set_pos(160, 0))
-        self.clock = ClockComponent(self.images) #.on_push(self.on_push_clock)
+        self.handle_push_clock = lambda : print("select clock pushed")
+        self.clock = ClockComponent(self.images).on_push(self.on_push_clock)
         self.clock.set_pos(0, 0).set_size(40, 40)
         self.add(self.clock)
 
@@ -356,6 +357,9 @@ class RadioPlayView(UiComponent):
 
         self.set_station(None)
 
+    def on_push_clock(self):
+        self.handle_push_clock()
+        
     def switch_favourite(self):
         self.favourite = not self.favourite
         self.set_favourite_button(self.favourite)
@@ -477,7 +481,6 @@ class RadioSelectView(UiComponent):
         self.add(self.keyboard) 
         
     def on_push_clock(self):
-        print("--- on push clock ---")
         self.handle_push_clock()
         
     def set_stations(self, stations, name_filter):
@@ -543,7 +546,8 @@ class RadioSetupView(UiComponent):
 
         self.add(ImageComponent(self.images.label(Images.LABEL_RADIO_PI)).set_pos(40, 0))
         self.add(ImageComponent(self.images.label(Images.LABEL_WAVE)).set_pos(160, 0))
-        self.clock = ClockComponent(self.images) #.on_push(self.on_push_clock)
+        self.handle_push_clock = lambda : print("select clock pushed")
+        self.clock = ClockComponent(self.images).on_push(self.on_push_clock)
         self.clock.set_pos(0, 0).set_size(40, 40)
         self.add(self.clock)
         
@@ -624,6 +628,9 @@ class RadioSetupView(UiComponent):
         self.set_pw("")
         self.set_ssid("")
 
+    def on_push_clock(self):
+        self.handle_push_clock()
+        
     def on_edit_ssid_field(self, event, source):
         self.edit_pw = False
         self.update_pw_field()
@@ -895,13 +902,15 @@ class TimeField(UiComponent):
                  .set_pos(x, y))
     
     def on_key_minus_0(self, event, source):
-        self.time = self.time.add(self.hh_minus_10)
+        if self.time.get_hh() >= 10:
+            self.time = self.time.add(self.hh_minus_10)
         self.time_enabled = True
         self.set_changed()
         return True
     
     def on_key_plus_0(self, event, source):
-        self.time = self.time.add(self.hh_plus_10)
+        if self.time.get_hh() < 14:
+            self.time = self.time.add(self.hh_plus_10)
         self.time_enabled = True
         self.set_changed()
         return True

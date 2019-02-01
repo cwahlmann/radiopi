@@ -90,5 +90,5 @@ input_device.calibration_load('calibration.ini')
 while True:
     input_device.poll(ui)
     ui.refresh()
-    time.sleep(0.02)
+    time.sleep(0.05)
     
