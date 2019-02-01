@@ -235,8 +235,6 @@ class ButtonComponent(ImageComponent):
         self.pushed = False
         ImageComponent.__init__(self, self.image_active)
         self.set_event_listener(UiEvent.MOUSE_DOWN_EVENT, lambda event, source: self.handle_mouse_down())
-        self.set_event_listener(UiEvent.MOUSE_UP_EVENT, lambda event, source: self.handle_mouse_up())
-        self.set_event_listener(UiEvent.MOUSE_LEAVE_EVENT, lambda event, source: self.handle_mouse_leave())
     
     def handle_mouse_down(self):
         if not self.active or not self.visible:
@@ -244,9 +242,11 @@ class ButtonComponent(ImageComponent):
         if not self.pushed:
             self.set_image(self.image_pushed)
             self.pushed = True
+            InterruptableThread().with_runnable(self.delayed_mouse_up).start()
         return True
-    
-    def handle_mouse_up(self):
+
+    def delayed_mouse_up(self):
+        time.sleep(0.5)
         if not self.active or not self.visible:
             return False
         if self.pushed:
@@ -254,9 +254,6 @@ class ButtonComponent(ImageComponent):
             self.pushed = False
         return True
 
-    def handle_mouse_leave(self):
-        self.handle_mouse_up()
-        
     def activate(self):
         if self.visible and not self.active:
             self.set_image(self.image_active)

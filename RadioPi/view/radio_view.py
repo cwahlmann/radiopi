@@ -902,14 +902,16 @@ class TimeField(UiComponent):
                  .set_pos(x, y))
     
     def on_key_minus_0(self, event, source):
-        if self.time.get_hh() >= 10:
+        t = self.time.add(self.offset)
+        if t.get_hh() >= 10:
             self.time = self.time.add(self.hh_minus_10)
         self.time_enabled = True
         self.set_changed()
         return True
     
     def on_key_plus_0(self, event, source):
-        if self.time.get_hh() < 14:
+        t = self.time.add(self.offset)
+        if t.get_hh() < 14:
             self.time = self.time.add(self.hh_plus_10)
         self.time_enabled = True
         self.set_changed()

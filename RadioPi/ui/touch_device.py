@@ -32,9 +32,12 @@ class TouchDevice (AbstractInputDevice):
             (self.touch_j - self.ofs_touch_j) * self.fx + self.ofsx)
             
     def poll(self, ui):
-        event = self.dev.read_one()
-                    
-        if (event != None):                
+        event = self.dev.read_one()                    
+        while (event != None):
+            self.handle_event(ui, event) 
+            event = self.dev.read_one()                    
+            
+    def handle_event(self, ui, event):               
             if (event.code == 0 and event.type == 3):  # Y-Axis
                 self.touch_i = event.value
             elif (event.code == 1 and event.type == 3):  # X-Axis
