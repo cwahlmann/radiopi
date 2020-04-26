@@ -82,7 +82,7 @@ Hello from the pygame community. https://www.pygame.org/contribute.html
 => all required python libs available
 ----
 
-calibrate the touch display:
+calibrate the touch display::
 [source, bash]
 ----
 pi@raspberrypi:~/RadioPi sudo python3 calibrate_touch.py
