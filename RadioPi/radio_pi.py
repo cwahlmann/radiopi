@@ -11,7 +11,8 @@ from radiostation.radioservice import RadioService
 from ui.touch_device import TouchDevice
 from ui.view import ImageFont, UI, FrameBuilder
 from view.radio_view import Images, RadioPlayView, RadioSelectView,\
-    RadioSetupView, ScreensaverView, RadioSetupClockView
+    RadioSetupView, ScreensaverView, RadioSetupClockView, RadioSelectMusicView
+from audiofile.audiofileservice import AudiofileService
 
 
 #from ui.mouse_device import MouseDevice
@@ -19,6 +20,7 @@ radio_client = RadioBrowserDeClient()
 radio_service = RadioService(radio_client)
 audio_player = VlcPlayer("./controlvlc_socket.sh")
 network_service = LinuxNetworkService()
+audiofile_service = AudiofileService()
 
 os.putenv('SDL_FBDEV', '/dev/fb1')
 
@@ -61,6 +63,9 @@ play_view.set_size(320, 240);
 select_view = RadioSelectView(screen, images, framebuilder, fonts, sizes, colors)
 select_view.set_size(320, 240)
 
+select_music_view = RadioSelectMusicView(screen, images, framebuilder, fonts, sizes, colors)
+select_music_view.set_size(320, 240);
+
 setup_view = RadioSetupView(screen, images, framebuilder, fonts, sizes, colors)
 setup_view.set_size(320, 240)
 
@@ -72,11 +77,12 @@ screensaver_view.set_size(320, 240)
 
 ui.get_root().add(play_view)
 ui.get_root().add(select_view)
+ui.get_root().add(select_music_view)
 ui.get_root().add(setup_view)
 ui.get_root().add(setup_clock_view)
 ui.set_screensaver(screensaver_view)
 
-controller = Controller(play_view, select_view, setup_view, setup_clock_view, radio_service, audio_player, network_service)
+controller = Controller(play_view, select_view, select_music_view, setup_view, setup_clock_view, radio_service, audio_player, network_service, audiofile_service)
 
 ui.get_root().show()
 ui.refresh()

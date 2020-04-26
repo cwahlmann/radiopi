@@ -30,7 +30,10 @@ class TouchDevice (AbstractInputDevice):
     def get_position(self):
         return ((self.touch_i - self.ofs_touch_i) * self.fy + self.ofsy,
             (self.touch_j - self.ofs_touch_j) * self.fx + self.ofsx)
-            
+
+    def get_raw_position(self):
+        return (self.touch_i, self.touch_j)
+
     def poll(self, ui):
         event = self.dev.read_one()                    
         while (event != None):
@@ -70,11 +73,40 @@ class TouchDevice (AbstractInputDevice):
             if self.pressed:
                 ui.on_event(UiEvent(UiEvent.MOUSE_DOWN_EVENT, pos))
                 ui.on_event(UiEvent(UiEvent.MOUSE_CLICK_EVENT, pos))
+                ui.on_event(UiEvent(UiEvent.RAW_MOUSE_DOWN_EVENT, (self.touch_i, self.touch_j)))
             else:
                 ui.on_event(UiEvent(UiEvent.MOUSE_UP_EVENT, pos))
+                ui.on_event(UiEvent(UiEvent.RAW_MOUSE_UP_EVENT, (self.touch_i, self.touch_j)))
                 self.touch_i = -1
                 self.touch_j = -1
-            
+
+    def calculate_calibration(self, p, tp):
+        (x0, y0) = p[0]
+        (x1, y1) = p[1]
+
+        print(tp)
+
+        (tx0, ty0) = tp[0]
+        (tx1, ty1) = tp[1]
+
+        dtx = tx1 - tx0
+        dty = ty1 - ty0
+
+        dx = x1 - x0
+        dy = y1 - y0
+
+        self.ofs_touch_i = tx0
+        self.ofs_touch_j = ty0
+        self.fx = dy / dty
+        self.ofsx = y0
+        self.fy = dx / dtx
+        self.ofsy = x0
+
+    def calibration_print(self):
+        print("ofs_touch = (%d, %d)" % (self.ofs_touch_i,self.ofs_touch_j))
+        print("ofs_f = (%f, %f)" % (self.fx,self.fy))
+        print("ofs_ofs = (%d, %d)" % (self.ofsx, self.ofsy))
+
     def calibration_save(self, filename):
         config = configparser.ConfigParser()
         config['CALIBRATION'] = {
@@ -96,64 +128,4 @@ class TouchDevice (AbstractInputDevice):
         self.fx = float(config['CALIBRATION']['fx']) 
         self.fy = float(config['CALIBRATION']['fy'])
         self.ofsx = float(config['CALIBRATION']['ofsx'])
-        self.ofsy = float(config['CALIBRATION']['ofsy']) 
-
- 
-# TODO!!
-class Calibrator():
-
-    def __init__(self, screen, width, height, touch):
-        self.width = width
-        self.height = height
-        self.screen = screen;
-        self.touch = touch
-        self.pos = [(10, 10), (width - 10, height - 10)]
-        self.tpos = []
-        self.index = 0
-        self.done = False
-        
-    def calibrate(self):
-        self.index = 0
-        self.done = False
-        self.next()
-        
-    def next(self):
-        (x, y) = self.pos[self.index]
-        self.screen.fill((255, 255, 255))
-        pygame.draw.line(self.screen, (255, 0, 0), (x - 10, y), (x + 10, y))
-        pygame.draw.line(self.screen, (255, 0, 0), (x, y - 10), (x, y + 10))
-        pygame.display.flip()
-        # todo
-        self.touch.on_click(self.store_input)
-        
-    def store_input(self, position):
-        self.tpos.append((self.touch.touch_i, self.touch.touch_j))
-        self.index = self.index + 1
-        if self.index < len(self.pos):
-            self.next()
-        else:
-            self.finish()
-
-    def finish(self):
-        (x0, y0) = self.pos[0]
-        (x1, y1) = self.pos[1]
-
-        (tx0, ty0) = self.tpos[0]
-        (tx1, ty1) = self.tpos[1]
-        
-        dtx = tx1 - tx0
-        dty = ty1 - ty0
-        
-        dx = x1 - x0
-        dy = y1 - y0
-        
-        self.touch.ofs_touch_i = tx0
-        self.touch.ofs_touch_j = ty0
-        self.touch.fx = dy / dty
-        self.touch.ofsx = y0
-        self.touch.fy = dx / dtx
-        self.touch.ofsy = x0
-        # TODO!!
-        self.touch.on_click(self.touch.default_on_click)
-        self.touch.calibration_save('calibration.ini')
-        self.done = True
+        self.ofsy = float(config['CALIBRATION']['ofsy'])

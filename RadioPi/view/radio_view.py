@@ -6,6 +6,7 @@ import pygame
 import math
 from clock.clock import Time
 from events.events import UiEvent
+#from audiofile.audiofileservice import AudiofileService
 
 
 class KeyComponent(ButtonComponent):
@@ -27,6 +28,10 @@ class Images:
     BUTTON_SMALL_UP = 8
     BUTTON_SMALL_DOWN = 9
     BUTTON_SCAN = 10
+    BUTTON_SELECT_MUSIC = 11
+    BUTTON_OK= 12
+    BUTTON_CANCEL = 13
+
     BUTTON_OFS_KEY = 100
     
     FRAME_TOP_LEFT = 20
@@ -107,17 +112,20 @@ class Images:
             Images.FRAME_BOTTOM: font.get_image(7, 11, 1, 1),
             }
         self.button_images = {
-            Images.BUTTON_SELECT_STATION: self.get_button_image(0, 8, 4, 4),
-            Images.BUTTON_START: self.get_button_image(0, 0, 4, 4),
-            Images.BUTTON_STOP: self.get_button_image(4, 0, 4, 4),
-            Images.BUTTON_VOLUME_UP: self.get_button_image(4, 4, 4, 4),
-            Images.BUTTON_VOLUME_DOWN: self.get_button_image(0, 4, 4, 4),
-            Images.BUTTON_SELECT_UP: self.get_button_image(4, 8, 2, 2),
-            Images.BUTTON_SELECT_DOWN: self.get_button_image(4, 10, 2, 2),
-            Images.BUTTON_SETUP: self.get_button_image(22, 10, 2, 2),
+            Images.BUTTON_SELECT_STATION: self.get_button_image(0, 6, 3, 3),
+            Images.BUTTON_START: self.get_button_image(0, 0, 3, 3),
+            Images.BUTTON_STOP: self.get_button_image(3, 0, 3, 3),
+            Images.BUTTON_VOLUME_UP: self.get_button_image(6, 3, 2, 3),
+            Images.BUTTON_VOLUME_DOWN: self.get_button_image(6, 0, 2, 3),
+            Images.BUTTON_SELECT_UP: self.get_button_image(4, 6, 2, 3),
+            Images.BUTTON_SELECT_DOWN: self.get_button_image(4, 9, 2, 3),
+            Images.BUTTON_SETUP: self.get_button_image(0, 3, 3, 3),
             Images.BUTTON_SMALL_UP: self.get_button_image(22, 3, 1, 1),
             Images.BUTTON_SMALL_DOWN: self.get_button_image(23, 3, 1, 1),
             Images.BUTTON_SCAN: self.get_button_image(21, 4, 1, 1),
+            Images.BUTTON_SELECT_MUSIC: self.get_button_image(3, 3, 3, 3),
+            Images.BUTTON_CANCEL: self.get_button_image(22, 10, 2, 2),
+            Images.BUTTON_OK: self.get_button_image(6, 6, 2, 2),
             }
         for j in range(10):
             for i in range(16):
@@ -313,41 +321,55 @@ class RadioPlayView(UiComponent):
         self.clock.set_pos(0, 0).set_size(40, 40)
         self.add(self.clock)
 
-        self.framebuilder.frame(self, 0, 2, 16, 6)
-        self.framebuilder.frame(self, 0, 8, 4, 4)
-        self.framebuilder.frame(self, 4, 8, 4, 4)
-        self.framebuilder.frame(self, 8, 8, 4, 4)
-        self.framebuilder.frame(self, 12, 8, 4, 4)
+        self.framebuilder.frame(self, 0, 2, 16, 7)
+        self.framebuilder.frame(self, 0, 9, 2, 3)
+        self.framebuilder.frame(self, 2, 9, 2, 3)
+        self.framebuilder.frame(self, 4, 9, 3, 3)
+        self.framebuilder.frame(self, 7, 9, 3, 3)
+        self.framebuilder.frame(self, 10, 9, 3, 3)
+        self.framebuilder.frame(self, 13, 9, 3, 3)
 
         self.handle_volume_down = self.default_key_handler
         self.handle_volume_up = self.default_key_handler
         self.handle_start = self.default_key_handler
         self.handle_stop = self.default_key_handler
         self.handle_select_station = self.default_key_handler
+        self.handle_select_music = self.default_key_handler
+        self.handle_setup = self.default_key_handler
         self.handle_favourite = self.default_favourite_handler
         
         self.volume_up_button = ButtonComponent(self.images.button(Images.BUTTON_VOLUME_DOWN))\
-            .set_pos(0, 160)\
+            .set_pos(0, 180)\
             .set_event_listener(UiEvent.MOUSE_CLICK_EVENT, lambda event, source: self.handle_volume_down()) 
         self.add(self.volume_up_button)
 
         self.volume_down_button = ButtonComponent(self.images.button(Images.BUTTON_VOLUME_UP))\
-            .set_pos(80, 160)\
+            .set_pos(40, 180)\
             .set_event_listener(UiEvent.MOUSE_CLICK_EVENT, lambda event, source: self.handle_volume_up())  
         self.add(self.volume_down_button)
 
         self.start_stop_button = ButtonComponent(self.images.button(Images.BUTTON_STOP))\
-            .set_pos(160, 160)\
+            .set_pos(80, 180)\
             .set_event_listener(UiEvent.MOUSE_CLICK_EVENT, lambda event, source: self.handle_start_stop()) 
         self.add(self.start_stop_button)
         
+        self.add(ButtonComponent(self.images.button(Images.BUTTON_SELECT_MUSIC))\
+            .set_pos(140, 180)\
+            .set_event_listener(UiEvent.MOUSE_CLICK_EVENT, lambda event, source: self.handle_select_music())
+            )
+
         self.add(ButtonComponent(self.images.button(Images.BUTTON_SELECT_STATION))\
-            .set_pos(240, 160)\
+            .set_pos(200, 180)\
             .set_event_listener(UiEvent.MOUSE_CLICK_EVENT, lambda event, source: self.handle_select_station())
             )
 
+        self.add(ButtonComponent(self.images.button(Images.BUTTON_SETUP))\
+            .set_pos(260, 180)\
+            .set_event_listener(UiEvent.MOUSE_CLICK_EVENT, lambda event, source: self.handle_setup())
+            )
+
         self.stationlabel = TextlabelComponent("---", fonts, sizes, colors)
-        self.stationlabel.set_pos(10, 50).set_size(300, 100) 
+        self.stationlabel.set_pos(10, 50).set_size(300, 120) 
         self.add(self.stationlabel)
 
         # favourite
@@ -427,17 +449,14 @@ class RadioSelectView(UiComponent):
         self.colors = colors
         self.keyboard_mode = 0  # 0 = num, 1 = numeric
         self.filter = ""
-        self.show_start_button = True
 
         self.handle_select_up = self.default_key_handler
         self.handle_select_down = self.default_key_handler
         self.handle_select_key = self.default_key_handler
         self.handle_play_station = self.default_play_station_handler
-        self.handle_setup = self.default_key_handler
         self.handle_select_station = self.default_key_handler
         self.handle_push_clock = lambda : print("select clock pushed")
 
-        self.favourite = False
         self.favourite_icon = ButtonComponent(self.images.button(Images.BUTTON_OFS_KEY + 0x2e))
               
         self.add(ImageComponent(self.images.label(Images.LABEL_RADIO_PI)).set_pos(40, 0))
@@ -447,23 +466,16 @@ class RadioSelectView(UiComponent):
         self.add(self.clock)
 
         self.framebuilder.frame(self, 0, 2, 14, 6)
-        # self.framebuilder.frame(self, 14, 2, 2, 2)
-        self.framebuilder.frame(self, 14, 2, 2, 4)
-#        self.framebuilder.frame(self, 14, 6, 2, 2)
+        self.framebuilder.frame(self, 14, 2, 2, 6)
         self.framebuilder.frame(self, 0, 8, 16, 4)
                 
-        self.add(ButtonComponent(self.images.button(Images.BUTTON_SETUP))\
-            .set_pos(280, 120)\
-            .set_event_listener(UiEvent.MOUSE_CLICK_EVENT, lambda event, source: self.handle_setup())
-            )
-
         self.add(ButtonComponent(self.images.button(Images.BUTTON_SELECT_UP))\
             .set_pos(280, 45)\
             .set_event_listener(UiEvent.MOUSE_CLICK_EVENT, lambda event, source: self.handle_select_up())
             )
 
         self.add(ButtonComponent(self.images.button(Images.BUTTON_SELECT_DOWN))\
-            .set_pos(280, 75)\
+            .set_pos(280, 95)\
             .set_event_listener(UiEvent.MOUSE_CLICK_EVENT, lambda event, source: self.handle_select_down())
             )
 
@@ -525,6 +537,104 @@ class RadioSelectView(UiComponent):
     def default_play_station_handler(self, station):
         print("default station handler")
 
+class RadioSelectMusicView(UiComponent):
+                    
+    def __init__(self, screen, images, framebuilder, fonts, sizes, colors):
+        UiComponent.__init__(self)
+        self.screen = screen
+        self.images = images
+        self.framebuilder = framebuilder
+        self.fonts = fonts
+        self.sizes = sizes
+        self.colors = colors
+        self.keyboard_mode = 0  # 0 = num, 1 = numeric
+        self.filter = ""
+
+        self.handle_select_up = self.default_key_handler
+        self.handle_select_down = self.default_key_handler
+        self.handle_select_music_key = self.default_key_handler
+        self.handle_play_station = self.default_play_file_handler
+        self.handle_select_station = self.default_key_handler
+        self.handle_push_clock = lambda : print("select clock pushed")
+
+        self.favourite_icon = ButtonComponent(self.images.button(Images.BUTTON_OFS_KEY + 0x2e))
+              
+        self.add(ImageComponent(self.images.label(Images.LABEL_RADIO_PI)).set_pos(40, 0))
+        self.add(ImageComponent(self.images.label(Images.LABEL_WAVE)).set_pos(160, 0))
+        self.clock = ClockComponent(self.images).on_push(self.on_push_clock)
+        self.clock.set_pos(0, 0).set_size(40, 40)
+        self.add(self.clock)
+
+        self.framebuilder.frame(self, 0, 2, 14, 6)
+        self.framebuilder.frame(self, 14, 2, 2, 6)
+        self.framebuilder.frame(self, 0, 8, 16, 4)
+                
+        self.add(ButtonComponent(self.images.button(Images.BUTTON_SELECT_UP))\
+            .set_pos(280, 45)\
+            .set_event_listener(UiEvent.MOUSE_CLICK_EVENT, lambda event, source: self.handle_select_up())
+            )
+
+        self.add(ButtonComponent(self.images.button(Images.BUTTON_SELECT_DOWN))\
+            .set_pos(280, 95)\
+            .set_event_listener(UiEvent.MOUSE_CLICK_EVENT, lambda event, source: self.handle_select_down())
+            )
+
+        self.file_list_view = ListViewComponent(self.fonts, self.sizes, self.colors)
+        self.file_list_view.set_size(260, 100, 35).set_pos(10, 50)
+        self.file_list_view.set_to_string(lambda file: self.get_file_string(file))
+        self.file_list_view.set_to_icon(lambda file: self.get_file_icon(file)) 
+        self.file_list_view.set_handle_select(lambda file: self.handle_play_file(file))
+        self.file_list_view.set_empty_message("-- no data --")
+        self.add(self.file_list_view)
+
+        self.keyboard = KeyboardComponent(self.images)
+        self.keyboard.set_pos(10, 170).set_size(300, 60)
+        self.keyboard.set_keyboard_handler(lambda keycode: self.handle_select_music_key(keycode))
+        self.add(self.keyboard) 
+        
+    def on_push_clock(self):
+        self.handle_push_clock()
+        
+    def set_files(self, files, name_filter):
+        self.filter = name_filter
+        if len(files) == 0:
+            self.file_list_view.set_empty_message("_-- no files found for *°%s°* --^" % name_filter.upper()) 
+        self.file_list_view.set_items(files)
+        self.set_changed()
+
+    def get_file_string(self, file):
+        s = "_*%s* %s\n%s" % (
+#            file.tags[AudiofileService.TAG_TITLE],
+#            file.tags[AudiofileService.TAG_GENRE],
+#            file.tags[AudiofileService.TAG_PATH],
+            )
+        if self.filter:
+            for F in self.filter.upper().split():
+                S = s.upper()
+                i0 = 0
+                i = S.find(F)
+                result = ""
+                while i >= 0:
+                    if (i > 0): 
+                        result = result + s[i0:i]
+                    result = result + "°" + s[i:i + len(F)] + "°"
+                    i0 = i + len(F)
+                    i = S.find(F, i0)
+                if (i0 < len(S)): 
+                    result = result + s[i0:]
+                s = result
+        return s
+        
+    def get_file_icon(self, file):
+        if not file.get_favourite():
+            return None
+        return self.favourite_icon
+
+    def default_key_handler(self):
+        print("default handler")
+
+    def default_play_file_handler(self, file):
+        print("default file handler")
         
 class RadioSetupView(UiComponent):
                     

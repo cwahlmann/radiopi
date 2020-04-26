@@ -111,6 +111,10 @@ class UiComponent:
     def on_event(self, event, offset):
         if not self.visible or not self.active:
             return False
+        if event.is_type(UiEvent.RAW_MOUSE_DOWN_EVENT) or event.is_type(UiEvent.RAW_MOUSE_UP_EVENT):
+            for component in self.components:
+                component.on_event(event, offset)
+            return True
         if event.is_type(UiEvent.MOUSE_MOVE_EVENT):
             self.on_mouse_move_event(event, offset)
         (x, y) = event.get_pos()

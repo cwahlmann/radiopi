@@ -17,6 +17,13 @@ class Time:
         (self.hh, self.mm, self.ss) = time
         return self
         
+    def serialize(self):
+        return "%d:%d:%d"%(self.hh, self.mm, self.ss)
+
+    def deserialize(self, s):
+        (hh,mm,ss) = s.split(":")
+        return self.with_time((int(hh), int(mm), int(ss)))
+                
     def get_hh(self):
         return self.hh
 

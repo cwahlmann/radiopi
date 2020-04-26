@@ -1,38 +1,56 @@
+import pygame
 import os
-import sys, pygame
-
 import time
-from ui import touch_device
+from ui.touch_device import TouchDevice
+from calibration.calibrator import CalibratorView
+from ui.view import ImageFont, UI
+from view.radio_view import Images
 
-def set_cross_pos(position, pressed):
-    global cross_pos
-    if not pressed:
-        (x,y) = position
-        cross_pos = (x,y) 
-          
 os.putenv('SDL_FBDEV', '/dev/fb1')
 
 pygame.init()
+pygame.font.init()
+
+screen = pygame.display.set_mode((320, 240))
+pygame.display.set_caption("Radio PI")
+
+font = ImageFont('gfx/font.png', (20, 20))
+font_pushed = ImageFont('gfx/font_pushed.png', (20, 20))
+font_inactive = ImageFont('gfx/font_inactive.png', (20, 20))
+ui = UI(screen, 320, 240, (0, 0, 0))
+images = Images(font, font, font_pushed, font_inactive)
+
+fontspath = "fonts/dejavu-fonts-ttf-2.37/ttf/"
+fonts = [
+    fontspath + 'DejaVuSans.ttf',
+    fontspath + 'DejaVuSans-Bold.ttf',
+    fontspath + 'DejaVuSans-Oblique.ttf',
+    fontspath + 'DejaVuSans-BoldOblique.ttf'
+]
+sizes = [12, 16, 20, 24]
+colors = [(255,255,255), (0,255,0)]
+
+calibrator_view = CalibratorView(images, fonts, sizes, colors)
+calibrator_view.set_size(320, 240);
+calibrator_view.visible = True
+
+ui.get_root().add(calibrator_view)
+
+ui.get_root().show()
+ui.refresh()
+
+#input_device = MouseDevice()
+#pygame.mouse.set_visible(True)
 pygame.mouse.set_visible(False)
+input_device = TouchDevice()
+input_device.calibration_load('calibration.ini')
 
-size = width, height = 320, 240
-speed = [2, 2]
-black = 0, 0, 0
-white = 255, 255, 255
+while not calibrator_view.done:
+    input_device.poll(ui)
+    ui.refresh()
+    time.sleep(0.05)
 
-screen = pygame.display.set_mode(size)
-
-ball = pygame.image.load("intro_ball.gif")
-ballrect = ball.get_rect()
-
-touch = touch_device.TouchPoller()
-touch.start()
-calibrator = touch_device.Calibrator(screen, 320, 240, touch)
-calibrator.calibrate()
-
-while not calibrator.done:
-    print("waiting...")
-    time.sleep(1)
-
-print("calibration done.")
-touch.stop()
+input_device.calculate_calibration(calibrator_view.pos_list, calibrator_view.tpos_list)
+input_device.calibration_print()
+os.system("cp calibration.ini ~calibration.ini");
+input_device.calibration_save('calibration.ini')
