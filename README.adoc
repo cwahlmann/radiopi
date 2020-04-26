@@ -82,6 +82,17 @@ Hello from the pygame community. https://www.pygame.org/contribute.html
 => all required python libs available
 ----
 
+calibrate the touch display:
+[source, bash]
+----
+pi@raspberrypi:~/RadioPi sudo python3 calibrate_touch.py
+----
+After clicking with a touch pen on both crosses the file 'calibration.ini' will be generated.
+If there is already one in the folder, a backup is made: '~calibration.ini'.
+
+*Be careful: starting the script twice will overwrite the first backup.*
+
+
 make `RadioPi` start at boot - add `/home/pi/RadioPi/startup.sh` to `/etc/rc.local`::
 [source, bash]
 ----
