@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=RadioPi
+Comment=RadioPi Webradio starten
+Type=Application
+Exec=/home/pi/RadioPi/startup.sh
+Terminal=true

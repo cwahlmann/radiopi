@@ -14,7 +14,7 @@ see more at <<screenshots>>
 
 === Software
 
-* Raspbian OS lite (a headless linux)
+* Raspbian OS (a Raspberry Pi Desktop Linux)
 * LCD touchscreen display driver (see your documentation where to obtain this)
 
 === additional content included
@@ -32,8 +32,10 @@ sudo apt-get upgrade
 ----
 
 install the LCD 3.2 display fb-driver::
-* *Only install the kernel driver.* Do not route X (that should not be there, because of "Raspbian OS lite") or the text-console to the LCD-Display!
+* install the kernel driver and route the desktop to the display
+* you can both use a mouse or the touch display for input
 * See your documentation how to setup the driver.
+
 The following instructions f.e. will install a display from `joy-IT`:
 [source, bash]
 ----
@@ -43,23 +45,45 @@ sudo nano /boot/config.txt
 dtparam=spi=on
 dtoverlay=joy-IT-Display-Driver-32b-overlay:rotate=270,swapxy=1
 
+# append the following parameter to the *first* line of the file
+sudo nano /boot/cmdline.txt
+
+fbcon=map:10
+
+# create a file with the following content:
+sudo nano /usr/share/X11/xorg.conf.d/99-calibration.conf
+
+Section "InputClass"
+    Identifier "calibration"
+    MatchProduct "ADS7846 Touchscreen"
+    Option "Calibration" "160 3723 3896 181"
+    Option "SwapAxes" "0"
+EndSection
+
+# change the following line of the file
+sudo nano /usr/share/X11/xorg.conf.d/99-fbturbo.conf
+
+Option "fbdev" "/dev/fb1"
+
 # get and install the display driver
 wget anleitung.joy-it.net/upload/joy-IT-Display-Driver-32b-overlay.dtb
 sudo cp joy-IT-Display-Driver-32b-overlay.dtb /boot/overlays/joy-IT-Display-Driver-32b-overlay.dtbo
+
+# install and copy a file for the touch input
+sudo apt-get install xserver-xorg-input-evdev
+sudo cp -rf /usr/share/X11/xorg.conf.d/10-evdev.conf /usr/share/X11/xorg.conf.d/45-evdev.conf
 ----
 
 install additional software::
-* `vlc` for playback
+* `pulseaudio` and `vlc` for playback
 * `python3` (may be already installed)
 * some `python3` libraries
 
 [source, bash]
 ----
+sudo apt-get install pulseaudio pulseaudio-utils
 sudo apt-get install vlc
-sudo apt-get install python3
-sudo apt-get install python3-pip
-sudo apt-get install python3-pygame
-sudo pip3 install requests evdev
+sudo apt-get install python3 python3-pip python3-pygame
 ----
 
 install `RadioPi`::
@@ -82,32 +106,12 @@ Hello from the pygame community. https://www.pygame.org/contribute.html
 => all required python libs available
 ----
 
-make `RadioPi` start at boot - add `/home/pi/RadioPi/startup.sh` to `/etc/rc.local`::
+make `RadioPi` start at boot::
+
 [source, bash]
 ----
-#!/bin/sh -e
-#
-# rc.local
-#
-# This script is executed at the end of each multiuser runlevel.
-# Make sure that the script will "exit 0" on success or any other
-# value on error.
-#
-# In order to enable or disable this script just change the execution
-# bits.
-#
-# By default this script does nothing.
-
-# Print the IP address
-_IP=$(hostname -I) || true
-if [ "$_IP" ]; then
-  printf "My IP address is %s\n" "$_IP"
-fi
-
-# start RadioPi
-/home/pi/RadioPi/startup.sh
-
-exit 0
+mkdir ~/.config/autostart
+cp radiopi.desktop ~/.config/autostart
 ----
 
 reboot system::

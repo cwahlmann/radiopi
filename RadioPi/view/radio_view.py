@@ -1067,11 +1067,12 @@ class TimeField(UiComponent):
         self.time_enabled = False
         self.set_changed()
         return True
+
                     
 class ScreensaverView (ScreensaverComponent):
 
-    def __init__(self, screen, images):
-        ScreensaverComponent.__init__(self, self.animate)
+    def __init__(self, screen, images, cursor_cross, cursor_empty):
+        ScreensaverComponent.__init__(self, self.animate, cursor_cross, cursor_empty)
         self.screen = screen
         self.images = images
 
@@ -1090,6 +1091,7 @@ class ScreensaverView (ScreensaverComponent):
         
         self.line_img = Images.LABEL_SCR_SAVER_0
         self.delay = 50
+        self.animation_mode = 0
         
     def animate(self):
         if self.delay > 0:

@@ -6,7 +6,7 @@ import pygame
 from controller.controller import Controller
 from radiostation.radio_browser_de_api_model import RadioBrowserDeClient
 from radiostation.radioservice import RadioService
-from ui.mouse_device import MouseDevice
+from ui.mouse_device import MouseDevice, cursor_cross, cursor_empty
 from ui.view import ImageFont, UI, FrameBuilder
 from view.radio_view import Images, RadioPlayView, RadioSelectView,\
     RadioSetupView, ScreensaverView, ClockComponent, RadioSetupClockView,\
@@ -73,7 +73,7 @@ setup_view.set_size(320, 240)
 setup_clock_view = RadioSetupClockView(screen, images, framebuilder, fonts, sizes, colors)
 setup_clock_view.set_size(320, 240)
 
-screensaver_view = ScreensaverView(screen, images)
+screensaver_view = ScreensaverView(screen, images, cursor_cross, cursor_empty)
 screensaver_view.set_size(320, 240)
 
 ui.get_root().add(play_view)
@@ -90,6 +90,8 @@ ui.refresh()
 
 input_device = MouseDevice()
 pygame.mouse.set_visible(True)
+pygame.mouse.set_cursor((16, 16), (7, 7), *cursor_cross)
+
 #pygame.mouse.set_visible(False)
 #input_device = TouchDevice()
 #input_device.calibration_load('calibration.ini')

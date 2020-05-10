@@ -2,6 +2,46 @@ import pygame
 from events.events import UiEvent
 from ui.input_device import AbstractInputDevice
 
+CURSOR_CROSS_LINES = (               #sized 16x16
+    "       x        ",
+    "      x.x       ",
+    "      x.x       ",
+    "      x.x       ",
+    "      x.x       ",
+    "      x.x       ",
+    " xxxxx. .xxxxx  ",
+    "x.....   .....x ",
+    " xxxxx. .xxxxx  ",
+    "      x.x       ",
+    "      x.x       ",
+    "      x.x       ",
+    "      x.x       ",
+    "      x.x       ",
+    "       x        ",
+    "                ")
+
+CURSOR_EMPTY_LINES = (               #sized 16x16
+    "                ",
+    "                ",
+    "                ",
+    "                ",
+    "                ",
+    "                ",
+    "                ",
+    "                ",
+    "                ",
+    "                ",
+    "                ",
+    "                ",
+    "                ",
+    "                ",
+    "                ",
+    "                ")
+
+cursor_cross = pygame.cursors.compile(CURSOR_CROSS_LINES, black='x', white='.', xor='o')
+cursor_empty = pygame.cursors.compile(CURSOR_EMPTY_LINES, black='x', white='.', xor='o')
+
+
 class MouseDevice (AbstractInputDevice):
     def __init__(self):
         self.mouse_down = False
