@@ -105,7 +105,7 @@ case $1 in
         logout)         command="logout" ;; 
         quit)           command="quit" ;; 
         shutdown)       command="shutdown" ;;
-        *)              echo "Usage: $0 [command]" ;;
+        *)              echo "$0: unknown parameter '$1' ;;
 
 esac
 
