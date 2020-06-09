@@ -26,8 +26,10 @@ see more at <<screenshots>>
 === Raspbian Buster
 ==== Audio setup
 
-There has been some changes in the sound configuration which seems to block activating the jack audio output the way, that is described in the official raspbian documentation.
+There has been some changes in the sound configuration. This seems to block activating the jack audio output the way that is described in the official raspbian documentation.
+
 Both 'amixer cset numid=3 1' and 'sudo raspi-config' don't work.
+It seems to be that now HDMI and JACK audio are configured as two different sound cards.
 
 There is a workaround by setting the default sound card. First list all sound cards with the command
 
@@ -40,7 +42,7 @@ There is a workaround by setting the default sound card. First list all sound ca
                       bcm2835 Headphones
 ----
 
-Then create a new file '/etc/asound.conf' that contains the lines
+Headphones (JACK audio) is located at card 1. Now create a new file '/etc/asound.conf' that contains the lines
 [source, bash]
 ----
 defaults.pcm.card 1
