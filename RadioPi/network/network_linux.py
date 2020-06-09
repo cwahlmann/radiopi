@@ -26,8 +26,9 @@ class LinuxNetworkService (NetworkService):
                 if not ssid in ssids:
                     ssids.append(ssid)
                     item = WlanItem(ssid, 0, 1)
-            elif line[0:6] == "level=" and item != None:
-                (level, level_max) = line[6:].split("/")
+            elif (line[0:6] == "level=" or line[0:8] == 'Quality=') and item != None:
+                (dummy, value) = line.split("=");
+                (level, level_max) = value.split("/")
                 item.level = int(level)
                 item.level_max = int(level_max)
                 result.append(item)
