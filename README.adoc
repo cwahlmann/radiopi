@@ -22,6 +22,37 @@ see more at <<screenshots>>
 * RadioPI uses the services of http://www.radio-browser.info . *Thanks a lot!!*
 * the free font package `dejavu-fonts-ttf-2.37`, see https://dejavu-fonts.github.io
 
+== Changes
+=== Raspbian Buster
+==== Audio setup
+
+There has been some changes in the sound configuration which seems to block activating the jack audio output the way, that is described in the official raspbian documentation.
+Both 'amixer cset numid=3 1' and 'sudo raspi-config' don't work.
+
+There is a workaround by setting the default sound card. First list all sound cards with the command
+
+[source, bash]
+----
+> cat /proc/asound/cards
+ 0 [b1             ]: bcm2835_hdmi - bcm2835 HDMI 1
+                      bcm2835 HDMI 1
+ 1 [Headphones     ]: bcm2835_headphonbcm2835 Headphones - bcm2835 Headphones
+                      bcm2835 Headphones
+----
+
+Then create a new file '/etc/asound.conf' that contains the lines
+[source, bash]
+----
+defaults.pcm.card 1
+defaults.ctl.card 1
+----
+
+After restarting your Raspberry audio jack will be selected by default.
+
+==== Wlan scan
+
+There has been a change int the output format when scanning for wlan. This has been fixed in the newest version of RadioPi, so that both the new and old way are suppored.
+
 == Setup
 
 update raspbian::
