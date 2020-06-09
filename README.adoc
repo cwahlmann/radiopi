@@ -51,7 +51,7 @@ After restarting your Raspberry audio jack will be selected by default.
 
 ==== Wlan scan
 
-There has been a change int the output format when scanning for wlan. This has been fixed in the newest version of RadioPi, so that both the new and old way are suppored.
+There has been a change in Raspbian concerning the output format when scanning for wlan. This has been fixed in the newest version of RadioPi. Both the new and old way are now suppored.
 
 == Setup
 
