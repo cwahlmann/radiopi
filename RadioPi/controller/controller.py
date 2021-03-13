@@ -526,8 +526,8 @@ class PlayStationThread(Thread):
         self.play_view = play_view
     
     def run(self):
-        url = self.radio_service.get_playable_url(self.station.get_id())
-        if url != None:
+        url = self.station.get_playable_url()
+        if url is not None:
             self.radio_player.play_url(url)
         else:
             self.play_view.set_station(None)

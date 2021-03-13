@@ -19,6 +19,9 @@ class Station:
     def get_homepage(self):
         return "undef"
 
+    def get_playable_url(self):
+        return "undef"
+
     def get_tags(self):
         return ["undef"]
 

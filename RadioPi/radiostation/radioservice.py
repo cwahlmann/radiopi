@@ -33,9 +33,6 @@ class RadioService:
     def find_stations_by_topvote(self, rows):
         return self.client.find_stations_by_topvote(rows)
 
-    def get_playable_url(self, station_id):
-        return self.client.get_playable_url(station_id)
-    
     def get_countries(self, filter_string):
         return self.client.get_list_of_item("countries", filter_string)
     
