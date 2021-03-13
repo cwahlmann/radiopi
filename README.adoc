@@ -23,9 +23,9 @@ see more at <<screenshots>>
 * the free font package `dejavu-fonts-ttf-2.37`, see https://dejavu-fonts.github.io
 
 == Changes
-=== Umstellung auf neue Radiobrowser API
+=== Implementation of the new Radiobrowser API
 
-Jetzt endlich hatte ich Zeit und Muße, Radio-PI auf die neue API umzustellen. Wer also Radio-PI einsetzen möchte, und sich darüber geärgert hat, kann dies nun wieder tun.
+Now I got time to implement the "new" Radiobrowser-API (that changed last summer). I am sorry if someone got disappointed about the delay and hope you enjoy the now working Radio-PI.
 
 === Raspbian Buster
 ==== Audio setup
